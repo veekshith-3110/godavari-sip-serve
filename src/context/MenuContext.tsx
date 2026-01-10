@@ -1,34 +1,38 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
-import { menuItems as initialMenuItems, MenuItem } from '@/data/mockData';
+import { createContext, useContext, ReactNode } from 'react';
+import { useMenuItems, MenuItem, MenuCategory } from '@/hooks/useMenuItems';
 
 interface MenuContextType {
   menuItems: MenuItem[];
-  addMenuItem: (item: MenuItem) => void;
-  updateMenuItem: (item: MenuItem) => void;
-  toggleAvailability: (itemId: string) => void;
+  loading: boolean;
+  addMenuItem: (item: Omit<MenuItem, 'id'>) => Promise<MenuItem | null>;
+  updateMenuItem: (item: MenuItem) => Promise<void>;
+  toggleAvailability: (itemId: string) => Promise<void>;
+  deleteMenuItem: (itemId: string) => Promise<void>;
 }
 
 const MenuContext = createContext<MenuContextType | undefined>(undefined);
 
 export const MenuProvider = ({ children }: { children: ReactNode }) => {
-  const [menuItems, setMenuItems] = useState<MenuItem[]>(initialMenuItems);
-
-  const addMenuItem = (item: MenuItem) => {
-    setMenuItems(prev => [...prev, { ...item, id: Date.now().toString() }]);
-  };
-
-  const updateMenuItem = (item: MenuItem) => {
-    setMenuItems(prev => prev.map(i => i.id === item.id ? item : i));
-  };
-
-  const toggleAvailability = (itemId: string) => {
-    setMenuItems(prev => prev.map(item =>
-      item.id === itemId ? { ...item, available: !item.available } : item
-    ));
-  };
+  const {
+    menuItems,
+    loading,
+    addMenuItem,
+    updateMenuItem,
+    toggleAvailability,
+    deleteMenuItem,
+  } = useMenuItems();
 
   return (
-    <MenuContext.Provider value={{ menuItems, addMenuItem, updateMenuItem, toggleAvailability }}>
+    <MenuContext.Provider
+      value={{
+        menuItems,
+        loading,
+        addMenuItem,
+        updateMenuItem,
+        toggleAvailability,
+        deleteMenuItem,
+      }}
+    >
       {children}
     </MenuContext.Provider>
   );
@@ -41,3 +45,5 @@ export const useMenu = () => {
   }
   return context;
 };
+
+export type { MenuItem, MenuCategory };

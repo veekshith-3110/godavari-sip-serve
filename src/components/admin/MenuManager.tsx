@@ -1,26 +1,25 @@
 import { useState, useRef } from 'react';
-import { MenuItem, Category } from '@/data/mockData';
-import { Edit2, Plus, X, Upload } from 'lucide-react';
+import { Edit2, Plus, X, Upload, Trash2, Loader2 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
-import { useMenu } from '@/context/MenuContext';
+import { useMenu, MenuItem, MenuCategory } from '@/context/MenuContext';
 
 const MenuManager = () => {
-  const { menuItems, addMenuItem, updateMenuItem, toggleAvailability } = useMenu();
+  const { menuItems, loading, addMenuItem, updateMenuItem, toggleAvailability, deleteMenuItem } = useMenu();
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const categories: Category[] = ['hot', 'snacks', 'cold', 'smoke'];
+  const categories: MenuCategory[] = ['hot', 'snacks', 'cold', 'smoke'];
 
   const handleEdit = (item: MenuItem) => {
     setEditingItem(item);
     setIsModalOpen(true);
   };
 
-  const handleSave = (updatedItem: MenuItem) => {
+  const handleSave = async (updatedItem: Omit<MenuItem, 'id'> & { id?: string }) => {
     if (editingItem) {
-      updateMenuItem(updatedItem);
+      await updateMenuItem({ ...updatedItem, id: editingItem.id } as MenuItem);
     } else {
-      addMenuItem(updatedItem);
+      await addMenuItem(updatedItem);
     }
     setIsModalOpen(false);
     setEditingItem(null);
@@ -30,6 +29,20 @@ const MenuManager = () => {
     setEditingItem(null);
     setIsModalOpen(true);
   };
+
+  const handleDelete = async (id: string) => {
+    if (confirm('Are you sure you want to delete this item?')) {
+      await deleteMenuItem(id);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 lg:space-y-6">
@@ -68,12 +81,20 @@ const MenuManager = () => {
                   <h3 className="font-bold text-sm lg:text-base text-foreground truncate">{item.name}</h3>
                   <p className="text-base lg:text-lg font-extrabold text-primary">₹{item.price}</p>
                 </div>
-                <button
-                  onClick={() => handleEdit(item)}
-                  className="p-1.5 lg:p-2 rounded-lg bg-muted hover:bg-secondary transition-colors flex-shrink-0"
-                >
-                  <Edit2 className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-muted-foreground" />
-                </button>
+                <div className="flex gap-1 flex-shrink-0">
+                  <button
+                    onClick={() => handleEdit(item)}
+                    className="p-1.5 lg:p-2 rounded-lg bg-muted hover:bg-secondary transition-colors"
+                  >
+                    <Edit2 className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-muted-foreground" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(item.id)}
+                    className="p-1.5 lg:p-2 rounded-lg bg-destructive/10 hover:bg-destructive/20 transition-colors"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-destructive" />
+                  </button>
+                </div>
               </div>
               <div className="flex items-center justify-between mt-2 lg:mt-3 pt-2 lg:pt-3 border-t border-border">
                 <span className="text-xs lg:text-sm text-muted-foreground capitalize">{item.category}</span>
@@ -87,6 +108,12 @@ const MenuManager = () => {
           </div>
         ))}
       </div>
+
+      {menuItems.length === 0 && (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">No menu items yet. Add your first item!</p>
+        </div>
+      )}
 
       {/* Edit Modal */}
       {isModalOpen && (
@@ -106,13 +133,13 @@ const MenuManager = () => {
 
 interface EditItemModalProps {
   item: MenuItem | null;
-  categories: Category[];
+  categories: MenuCategory[];
   onClose: () => void;
-  onSave: (item: MenuItem) => void;
+  onSave: (item: Omit<MenuItem, 'id'> & { id?: string }) => void;
 }
 
 const EditItemModal = ({ item, categories, onClose, onSave }: EditItemModalProps) => {
-  const [formData, setFormData] = useState<Partial<MenuItem>>(
+  const [formData, setFormData] = useState<Omit<MenuItem, 'id'> & { id?: string }>(
     item || {
       name: '',
       price: 0,
@@ -121,6 +148,7 @@ const EditItemModal = ({ item, categories, onClose, onSave }: EditItemModalProps
       available: true,
     }
   );
+  const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -134,9 +162,11 @@ const EditItemModal = ({ item, categories, onClose, onSave }: EditItemModalProps
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (formData.name && formData.price !== undefined && formData.price > 0 && formData.category) {
-      onSave({ ...formData, image: formData.image || '/placeholder.svg' } as MenuItem);
+      setIsSaving(true);
+      await onSave({ ...formData, image: formData.image || '/placeholder.svg' });
+      setIsSaving(false);
     }
   };
 
@@ -189,7 +219,7 @@ const EditItemModal = ({ item, categories, onClose, onSave }: EditItemModalProps
             </label>
             <select
               value={formData.category}
-              onChange={(e) => setFormData({ ...formData, category: e.target.value as Category })}
+              onChange={(e) => setFormData({ ...formData, category: e.target.value as MenuCategory })}
               className="w-full p-3 rounded-xl border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             >
               {categories.map((cat) => (
@@ -236,8 +266,10 @@ const EditItemModal = ({ item, categories, onClose, onSave }: EditItemModalProps
         <div className="p-4 border-t border-border">
           <button
             onClick={handleSubmit}
-            className="w-full py-3 bg-primary text-primary-foreground font-bold rounded-xl hover:opacity-90 transition-opacity"
+            disabled={isSaving}
+            className="w-full py-3 bg-primary text-primary-foreground font-bold rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
           >
+            {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
             {item ? 'Save Changes' : 'Add Item'}
           </button>
         </div>
