@@ -1,20 +1,35 @@
 import { useState } from 'react';
 import { mockExpenses, Expense } from '@/data/mockData';
 import { Plus, Trash2 } from 'lucide-react';
+import ExpenseModal from '@/components/ExpenseModal';
 
 const ExpenseLog = () => {
   const [expenses, setExpenses] = useState<Expense[]>(mockExpenses);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
 
   const handleDelete = (id: string) => {
     setExpenses(expenses.filter(exp => exp.id !== id));
   };
 
+  const handleAddExpense = (description: string, amount: number) => {
+    const newExpense: Expense = {
+      id: Date.now().toString(),
+      description,
+      amount,
+      timestamp: new Date(),
+    };
+    setExpenses([newExpense, ...expenses]);
+  };
+
   return (
     <div className="space-y-4 lg:space-y-6">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-xl lg:text-2xl font-bold text-foreground">Expense Log</h2>
-        <button className="flex items-center gap-2 px-3 lg:px-4 py-2 bg-destructive text-destructive-foreground rounded-xl font-semibold hover:opacity-90 transition-opacity text-sm lg:text-base">
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center gap-2 px-3 lg:px-4 py-2 bg-destructive text-destructive-foreground rounded-xl font-semibold hover:opacity-90 transition-opacity text-sm lg:text-base"
+        >
           <Plus className="w-4 h-4 lg:w-5 lg:h-5" />
           <span className="hidden sm:inline">Add Expense</span>
           <span className="sm:hidden">Add</span>
@@ -62,6 +77,13 @@ const ExpenseLog = () => {
           )}
         </div>
       </div>
+
+      {/* Expense Modal */}
+      <ExpenseModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleAddExpense}
+      />
     </div>
   );
 };
