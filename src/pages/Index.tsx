@@ -63,20 +63,33 @@ const Index = () => {
     const order = await createOrder(cart, total);
     
     if (order) {
-      // Trigger print
-      const printWindow = window.open('', '_blank');
-      if (printWindow) {
-        printWindow.document.write(`
+      // Create hidden iframe for silent printing
+      const iframe = document.createElement('iframe');
+      iframe.style.position = 'absolute';
+      iframe.style.top = '-10000px';
+      iframe.style.left = '-10000px';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      document.body.appendChild(iframe);
+      
+      const doc = iframe.contentWindow?.document;
+      if (doc) {
+        doc.open();
+        doc.write(`
           <html>
             <head>
               <title>Token #${order.tokenNumber}</title>
               <style>
-                @page { size: 58mm auto; margin: 0; }
+                @page { size: 80mm auto; margin: 0; }
+                @media print {
+                  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                }
                 body { 
                   font-family: 'Courier New', monospace; 
                   font-size: 12px; 
                   padding: 8px;
                   margin: 0;
+                  width: 80mm;
                 }
                 .header { text-align: center; }
                 .title { font-size: 16px; font-weight: bold; }
@@ -86,8 +99,8 @@ const Index = () => {
                 .token-label { font-size: 10px; }
                 .token-number { font-size: 32px; font-weight: 800; }
                 .items { margin: 8px 0; }
-                .item { display: flex; justify-content: space-between; }
-                .total { text-align: center; font-weight: bold; font-size: 14px; }
+                .item { display: flex; justify-content: space-between; margin: 2px 0; }
+                .total { text-align: center; font-weight: bold; font-size: 14px; margin-top: 8px; }
                 .footer { text-align: center; margin-top: 16px; font-size: 10px; }
               </style>
             </head>
@@ -111,9 +124,16 @@ const Index = () => {
             </body>
           </html>
         `);
-        printWindow.document.close();
-        printWindow.print();
-        printWindow.close();
+        doc.close();
+        
+        // Auto-print when content is loaded
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+        
+        // Remove iframe after a delay
+        setTimeout(() => {
+          document.body.removeChild(iframe);
+        }, 1000);
       }
 
       toast({
