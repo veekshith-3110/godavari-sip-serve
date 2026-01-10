@@ -142,7 +142,7 @@ const EditItemModal = ({ item, categories, onClose, onSave }: EditItemModalProps
   };
 
   const handleSubmit = () => {
-    if (formData.name && formData.price && formData.category && formData.image) {
+    if (formData.name && formData.price !== undefined && formData.price > 0 && formData.category && formData.image) {
       onSave(formData as MenuItem);
     }
   };
@@ -183,9 +183,10 @@ const EditItemModal = ({ item, categories, onClose, onSave }: EditItemModalProps
             </label>
             <input
               type="number"
-              value={formData.price}
-              onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) })}
+              value={formData.price || ''}
+              onChange={(e) => setFormData({ ...formData, price: e.target.value ? parseFloat(e.target.value) : 0 })}
               className="w-full p-3 rounded-xl border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              placeholder="Enter price"
             />
           </div>
 
