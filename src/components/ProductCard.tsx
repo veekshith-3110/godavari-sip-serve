@@ -20,7 +20,7 @@ const ProductCard = ({ item, onAdd }: ProductCardProps) => {
       }`}
     >
       {/* Image Section - 80% */}
-      <div className="relative h-32 sm:h-36 md:h-40 overflow-hidden">
+      <div className="relative aspect-square overflow-hidden">
         <img
           src={item.image}
           alt={item.name}
@@ -29,7 +29,7 @@ const ProductCard = ({ item, onAdd }: ProductCardProps) => {
         />
         {!item.available && (
           <div className="absolute inset-0 bg-foreground/60 flex items-center justify-center">
-            <span className="text-background font-bold text-lg rotate-[-15deg]">
+            <span className="text-background font-bold text-sm md:text-lg rotate-[-15deg]">
               SOLD OUT
             </span>
           </div>
@@ -37,11 +37,11 @@ const ProductCard = ({ item, onAdd }: ProductCardProps) => {
       </div>
       
       {/* Info Section - 20% */}
-      <div className="p-3 bg-card border-t border-border">
-        <h3 className="font-bold text-base sm:text-lg truncate text-foreground">
+      <div className="p-2 md:p-3 bg-card border-t border-border">
+        <h3 className="font-bold text-sm md:text-base lg:text-lg truncate text-foreground">
           {item.name}
         </h3>
-        <p className="text-xl sm:text-2xl font-extrabold text-primary">
+        <p className="text-lg md:text-xl lg:text-2xl font-extrabold text-primary">
           ₹{item.price}
         </p>
       </div>

@@ -21,11 +21,11 @@ const CategoryTabs = ({ activeCategory, onCategoryChange }: CategoryTabsProps) =
         <button
           key={cat.id}
           onClick={() => onCategoryChange(cat.id)}
-          className={`category-tab flex items-center justify-center gap-2 min-w-[70px] ${
+          className={`category-tab flex items-center justify-center gap-2 min-w-[60px] md:min-w-[70px] px-3 md:px-4 py-2 md:py-3 ${
             activeCategory === cat.id ? 'active' : 'bg-muted text-muted-foreground'
           }`}
         >
-          <span className="text-xl">{cat.icon}</span>
+          <span className="text-lg md:text-xl">{cat.icon}</span>
         </button>
       ))}
     </div>
