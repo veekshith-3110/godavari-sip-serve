@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { menuItems, Category } from '@/data/mockData';
-import { Calendar as CalendarIcon, TrendingUp, TrendingDown, Minus, Coffee, UtensilsCrossed, Droplets, Flame } from 'lucide-react';
+import { Calendar as CalendarIcon, TrendingUp, TrendingDown, Minus, Coffee, UtensilsCrossed, Droplets, Flame, ChevronDown, ChevronUp } from 'lucide-react';
 import { format, startOfWeek, addDays, subWeeks, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -8,9 +8,66 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const yearlyData = [
-  { year: 2022, orders: 6200, sales: 496000, growth: 0 },
-  { year: 2023, orders: 7100, sales: 568000, growth: 14.5 },
-  { year: 2024, orders: 7234, sales: 584600, growth: 2.9 },
+  { 
+    year: 2022, 
+    orders: 6200, 
+    sales: 496000, 
+    growth: 0,
+    months: [
+      { name: 'Jan', sales: 38000, orders: 480 },
+      { name: 'Feb', sales: 35000, orders: 440 },
+      { name: 'Mar', sales: 42000, orders: 530 },
+      { name: 'Apr', sales: 40000, orders: 500 },
+      { name: 'May', sales: 43000, orders: 540 },
+      { name: 'Jun', sales: 45000, orders: 560 },
+      { name: 'Jul', sales: 48000, orders: 600 },
+      { name: 'Aug', sales: 46000, orders: 575 },
+      { name: 'Sep', sales: 44000, orders: 550 },
+      { name: 'Oct', sales: 42000, orders: 525 },
+      { name: 'Nov', sales: 38000, orders: 475 },
+      { name: 'Dec', sales: 35000, orders: 425 },
+    ]
+  },
+  { 
+    year: 2023, 
+    orders: 7100, 
+    sales: 568000, 
+    growth: 14.5,
+    months: [
+      { name: 'Jan', sales: 42000, orders: 525 },
+      { name: 'Feb', sales: 38000, orders: 475 },
+      { name: 'Mar', sales: 48000, orders: 600 },
+      { name: 'Apr', sales: 46000, orders: 575 },
+      { name: 'May', sales: 50000, orders: 625 },
+      { name: 'Jun', sales: 52000, orders: 650 },
+      { name: 'Jul', sales: 55000, orders: 690 },
+      { name: 'Aug', sales: 53000, orders: 665 },
+      { name: 'Sep', sales: 50000, orders: 625 },
+      { name: 'Oct', sales: 48000, orders: 600 },
+      { name: 'Nov', sales: 44000, orders: 550 },
+      { name: 'Dec', sales: 42000, orders: 520 },
+    ]
+  },
+  { 
+    year: 2024, 
+    orders: 7234, 
+    sales: 584600, 
+    growth: 2.9,
+    months: [
+      { name: 'Jan', sales: 45200, orders: 580 },
+      { name: 'Feb', sales: 41800, orders: 520 },
+      { name: 'Mar', sales: 48600, orders: 610 },
+      { name: 'Apr', sales: 47200, orders: 590 },
+      { name: 'May', sales: 51200, orders: 640 },
+      { name: 'Jun', sales: 54400, orders: 680 },
+      { name: 'Jul', sales: 57600, orders: 720 },
+      { name: 'Aug', sales: 55200, orders: 690 },
+      { name: 'Sep', sales: 52000, orders: 650 },
+      { name: 'Oct', sales: 48200, orders: 612 },
+      { name: 'Nov', sales: 42600, orders: 532 },
+      { name: 'Dec', sales: 40600, orders: 410 },
+    ]
+  },
 ];
 
 // Generate weekly report data
@@ -66,6 +123,135 @@ const getWeeklyReport = () => {
   
   return { days, totalSales, totalOrders, totalItems, weeklyGrowth, weekStart, daysElapsed };
 };
+
+// Yearly Report Card with expandable month-wise breakdown
+interface YearData {
+  year: number;
+  orders: number;
+  sales: number;
+  growth: number;
+  months: { name: string; sales: number; orders: number }[];
+}
+
+const YearlyReportCard = ({ yearData }: { yearData: YearData }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  
+  // Find best and worst months
+  const sortedMonths = [...yearData.months].sort((a, b) => b.sales - a.sales);
+  const bestMonth = sortedMonths[0];
+  const worstMonth = sortedMonths[sortedMonths.length - 1];
+  
+  return (
+    <div className="border border-border rounded-lg overflow-hidden">
+      {/* Year Header - Clickable */}
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full flex items-center justify-between p-3 bg-muted/30 hover:bg-muted/50 transition-colors"
+      >
+        <div className="flex items-center gap-3">
+          <span className="text-sm md:text-base font-bold text-foreground">{yearData.year}</span>
+          <span className={cn(
+            "text-[10px] px-1.5 py-0.5 rounded-full font-medium",
+            yearData.growth >= 0 ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"
+          )}>
+            {yearData.growth >= 0 ? '+' : ''}{yearData.growth}%
+          </span>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="text-right">
+            <p className="text-sm md:text-base font-bold text-foreground">₹{(yearData.sales / 100000).toFixed(1)}L</p>
+            <p className="text-[10px] text-muted-foreground">{yearData.orders.toLocaleString()} orders</p>
+          </div>
+          {isExpanded ? (
+            <ChevronUp className="w-4 h-4 text-muted-foreground" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+          )}
+        </div>
+      </button>
+      
+      {/* Expanded Month-wise Breakdown */}
+      {isExpanded && (
+        <div className="p-3 border-t border-border">
+          {/* Quick Stats */}
+          <div className="grid grid-cols-2 gap-2 mb-3">
+            <div className="p-2 bg-green-500/10 rounded-lg">
+              <p className="text-[10px] text-muted-foreground">Best Month</p>
+              <p className="text-sm font-bold text-green-600">{bestMonth.name}</p>
+              <p className="text-[10px] text-muted-foreground">₹{bestMonth.sales.toLocaleString()}</p>
+            </div>
+            <div className="p-2 bg-red-500/10 rounded-lg">
+              <p className="text-[10px] text-muted-foreground">Lowest Month</p>
+              <p className="text-sm font-bold text-red-500">{worstMonth.name}</p>
+              <p className="text-[10px] text-muted-foreground">₹{worstMonth.sales.toLocaleString()}</p>
+            </div>
+          </div>
+          
+          {/* Month-wise Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="text-muted-foreground border-b border-border">
+                  <th className="pb-1.5 text-left font-medium">Month</th>
+                  <th className="pb-1.5 text-right font-medium">Sales</th>
+                  <th className="pb-1.5 text-right font-medium">Orders</th>
+                  <th className="pb-1.5 text-right font-medium">Avg/Order</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/50">
+                {yearData.months.map((month, index) => {
+                  const avgPerOrder = month.orders > 0 ? Math.round(month.sales / month.orders) : 0;
+                  const isBest = month.name === bestMonth.name;
+                  const isWorst = month.name === worstMonth.name;
+                  
+                  return (
+                    <tr 
+                      key={index}
+                      className={cn(
+                        isBest && "bg-green-500/5",
+                        isWorst && "bg-red-500/5"
+                      )}
+                    >
+                      <td className="py-1.5 font-medium text-foreground">
+                        <span className="flex items-center gap-1">
+                          {month.name}
+                          {isBest && <span className="text-[10px]">🏆</span>}
+                        </span>
+                      </td>
+                      <td className="py-1.5 text-right font-semibold text-foreground">
+                        ₹{(month.sales / 1000).toFixed(1)}K
+                      </td>
+                      <td className="py-1.5 text-right text-muted-foreground">
+                        {month.orders}
+                      </td>
+                      <td className="py-1.5 text-right text-muted-foreground">
+                        ₹{avgPerOrder}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+              <tfoot>
+                <tr className="border-t border-border bg-muted/30">
+                  <td className="py-1.5 font-bold text-foreground">Total</td>
+                  <td className="py-1.5 text-right font-bold text-foreground">
+                    ₹{(yearData.sales / 100000).toFixed(1)}L
+                  </td>
+                  <td className="py-1.5 text-right font-bold text-foreground">
+                    {yearData.orders.toLocaleString()}
+                  </td>
+                  <td className="py-1.5 text-right font-bold text-foreground">
+                    ₹{Math.round(yearData.sales / yearData.orders)}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 // Generate monthly item-wise sales report
 const getMonthlyItemReport = (month: Date) => {
@@ -344,30 +530,14 @@ const SalesReports = () => {
         </div>
       </div>
 
-      {/* Yearly Reports */}
+      {/* Yearly Reports with Month-wise Breakdown */}
       <div className="stat-card p-2 md:p-3">
-        <h3 className="text-xs md:text-sm font-bold text-foreground mb-2">Yearly Summary</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="text-muted-foreground border-b border-border">
-                <th className="pb-1 text-left font-medium">Year</th>
-                <th className="pb-1 text-right font-medium">Sales</th>
-                <th className="pb-1 text-right font-medium">Growth</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/50">
-              {yearlyData.map((year) => (
-                <tr key={year.year}>
-                  <td className="py-1 font-medium text-foreground">{year.year}</td>
-                  <td className="py-1 text-right font-semibold text-foreground">₹{(year.sales / 100000).toFixed(1)}L</td>
-                  <td className={`py-1 text-right font-medium ${year.growth >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                    {year.growth >= 0 ? '+' : ''}{year.growth}%
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <h3 className="text-xs md:text-sm font-bold text-foreground mb-3">Yearly Summary</h3>
+        
+        <div className="space-y-3">
+          {yearlyData.map((year) => (
+            <YearlyReportCard key={year.year} yearData={year} />
+          ))}
         </div>
       </div>
     </div>
