@@ -1,5 +1,5 @@
-import { Category, categoryIcons } from '@/data/mockData';
-import { Coffee, UtensilsCrossed, Droplets, Cigarette } from 'lucide-react';
+import { Category } from '@/data/mockData';
+import { LayoutGrid, Coffee, UtensilsCrossed, Droplets, Flame } from 'lucide-react';
 
 interface CategoryTabsProps {
   activeCategory: Category | 'all';
@@ -7,11 +7,11 @@ interface CategoryTabsProps {
 }
 
 const categories: { id: Category | 'all'; icon: React.ReactNode; label: string }[] = [
-  { id: 'all', icon: '🏪', label: 'All' },
-  { id: 'hot', icon: <Coffee className="w-6 h-6" />, label: 'Hot' },
-  { id: 'snacks', icon: <UtensilsCrossed className="w-6 h-6" />, label: 'Snacks' },
-  { id: 'cold', icon: <Droplets className="w-6 h-6" />, label: 'Cold' },
-  { id: 'smoke', icon: <Cigarette className="w-6 h-6" />, label: 'Smoke' },
+  { id: 'all', icon: <LayoutGrid className="w-5 h-5" strokeWidth={1.5} />, label: 'All' },
+  { id: 'hot', icon: <Coffee className="w-5 h-5" strokeWidth={1.5} />, label: 'Hot' },
+  { id: 'snacks', icon: <UtensilsCrossed className="w-5 h-5" strokeWidth={1.5} />, label: 'Snacks' },
+  { id: 'cold', icon: <Droplets className="w-5 h-5" strokeWidth={1.5} />, label: 'Cold' },
+  { id: 'smoke', icon: <Flame className="w-5 h-5" strokeWidth={1.5} />, label: 'Smoke' },
 ];
 
 const CategoryTabs = ({ activeCategory, onCategoryChange }: CategoryTabsProps) => {
@@ -21,11 +21,13 @@ const CategoryTabs = ({ activeCategory, onCategoryChange }: CategoryTabsProps) =
         <button
           key={cat.id}
           onClick={() => onCategoryChange(cat.id)}
-          className={`category-tab flex items-center justify-center gap-2 min-w-[60px] md:min-w-[70px] px-3 md:px-4 py-2 md:py-3 ${
-            activeCategory === cat.id ? 'active' : 'bg-muted text-muted-foreground'
+          className={`flex items-center justify-center min-w-[56px] md:min-w-[64px] p-3 md:p-4 rounded-xl transition-all duration-200 ${
+            activeCategory === cat.id 
+              ? 'bg-primary text-primary-foreground shadow-md' 
+              : 'bg-card text-muted-foreground border border-border hover:border-primary/30 hover:text-foreground'
           }`}
         >
-          <span className="text-lg md:text-xl">{cat.icon}</span>
+          {cat.icon}
         </button>
       ))}
     </div>
