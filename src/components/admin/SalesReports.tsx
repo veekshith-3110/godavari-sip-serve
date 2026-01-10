@@ -189,6 +189,31 @@ const SalesReports = () => {
         </div>
       </div>
 
+      {/* Orders for Selected Date - Compact */}
+      <div className="stat-card p-2 md:p-3">
+        <h3 className="text-xs md:text-sm font-bold text-foreground mb-2">Orders - {dateLabel}</h3>
+        {ordersForDate.length > 0 ? (
+          <div className="space-y-1">
+            {ordersForDate.map((order) => (
+              <div key={order.id} className="flex items-center justify-between py-1.5 border-b border-border last:border-0">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <span className="text-xs font-bold text-primary">#{order.tokenNumber}</span>
+                  <span className="text-xs text-foreground truncate">{order.items.map(item => `${item.name} ×${item.quantity}`).join(', ')}</span>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className="text-xs font-semibold text-foreground">₹{order.total}</span>
+                  <span className="text-[10px] text-muted-foreground hidden sm:inline">
+                    {order.timestamp.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-center text-muted-foreground py-4 text-xs">No orders</p>
+        )}
+      </div>
+
       {/* Weekly Report - Detailed */}
       <div className="stat-card p-2 md:p-3">
         <div className="flex items-center justify-between mb-2">
@@ -281,31 +306,6 @@ const SalesReports = () => {
             </tbody>
           </table>
         </div>
-      </div>
-
-      {/* Orders for Selected Date - Compact */}
-      <div className="stat-card p-2 md:p-3">
-        <h3 className="text-xs md:text-sm font-bold text-foreground mb-2">Orders - {dateLabel}</h3>
-        {ordersForDate.length > 0 ? (
-          <div className="space-y-1">
-            {ordersForDate.map((order) => (
-              <div key={order.id} className="flex items-center justify-between py-1.5 border-b border-border last:border-0">
-                <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <span className="text-xs font-bold text-primary">#{order.tokenNumber}</span>
-                  <span className="text-xs text-foreground truncate">{order.items.map(item => `${item.name} ×${item.quantity}`).join(', ')}</span>
-                </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className="text-xs font-semibold text-foreground">₹{order.total}</span>
-                  <span className="text-[10px] text-muted-foreground hidden sm:inline">
-                    {order.timestamp.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-center text-muted-foreground py-4 text-xs">No orders</p>
-        )}
       </div>
 
       {/* Monthly & Yearly Reports - Compact Tables */}
