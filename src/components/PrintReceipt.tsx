@@ -19,35 +19,37 @@ const PrintReceipt = forwardRef<HTMLDivElement, PrintReceiptProps>(
         className="print-receipt"
         style={{
           display: 'none',
-          width: '72mm',
-          padding: '4mm',
+          width: '58mm',
+          maxWidth: '58mm',
+          padding: '2mm',
           fontFamily: "'Courier New', monospace",
-          fontSize: '12pt',
-          lineHeight: 1.4,
+          fontSize: '12px',
+          lineHeight: 1.3,
           color: '#000',
           background: '#fff',
+          boxSizing: 'border-box',
         }}
       >
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '3mm' }}>
-          <div style={{ fontSize: '16pt', fontWeight: 'bold' }}>GODAVARI CAFE</div>
-          <div style={{ fontSize: '10pt', marginTop: '1mm' }}>{date} | {time}</div>
+        <div style={{ textAlign: 'center', marginBottom: '2mm' }}>
+          <div style={{ fontSize: '16px', fontWeight: 'bold' }}>GODAVARI CAFE</div>
+          <div style={{ fontSize: '10px', marginTop: '1mm' }}>{date} | {time}</div>
         </div>
 
         {/* Divider */}
-        <div style={{ textAlign: 'center', margin: '3mm 0', fontSize: '10pt' }}>------------------------</div>
+        <div style={{ textAlign: 'center', margin: '2mm 0', fontSize: '10px' }}>----------------------</div>
 
         {/* Token Number */}
-        <div style={{ textAlign: 'center', margin: '4mm 0' }}>
-          <div style={{ fontSize: '12pt', fontWeight: 500 }}>TOKEN</div>
-          <div style={{ fontSize: '32pt', fontWeight: 900 }}>#{tokenNumber}</div>
+        <div style={{ textAlign: 'center', margin: '3mm 0' }}>
+          <div style={{ fontSize: '10px', fontWeight: 500 }}>TOKEN</div>
+          <div style={{ fontSize: '32px', fontWeight: 900, whiteSpace: 'nowrap' }}>#{tokenNumber}</div>
         </div>
 
         {/* Divider */}
-        <div style={{ textAlign: 'center', margin: '3mm 0', fontSize: '10pt' }}>------------------------</div>
+        <div style={{ textAlign: 'center', margin: '2mm 0', fontSize: '10px' }}>----------------------</div>
 
         {/* Items */}
-        <div style={{ margin: '3mm 0' }}>
+        <div style={{ margin: '2mm 0' }}>
           {items.map((item) => (
             <div 
               key={item.id} 
@@ -55,30 +57,37 @@ const PrintReceipt = forwardRef<HTMLDivElement, PrintReceiptProps>(
                 display: 'flex', 
                 justifyContent: 'space-between', 
                 alignItems: 'flex-start',
-                marginBottom: '2mm',
-                fontSize: '12pt',
+                marginBottom: '1.5mm',
+                fontSize: '12px',
                 width: '100%',
                 boxSizing: 'border-box',
+                gap: '2mm',
               }}
             >
-              <span style={{ flex: 1, wordWrap: 'break-word', paddingRight: '3mm', fontWeight: 500 }}>
+              <span style={{ 
+                flex: 1, 
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word',
+                fontWeight: 500,
+                minWidth: 0,
+              }}>
                 {item.name}
               </span>
-              <span style={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>x{item.quantity}</span>
+              <span style={{ fontWeight: 'bold', whiteSpace: 'nowrap', flexShrink: 0 }}>x{item.quantity}</span>
             </div>
           ))}
         </div>
 
         {/* Divider */}
-        <div style={{ textAlign: 'center', margin: '3mm 0', fontSize: '10pt' }}>------------------------</div>
+        <div style={{ textAlign: 'center', margin: '2mm 0', fontSize: '10px' }}>----------------------</div>
 
         {/* Total */}
-        <div style={{ textAlign: 'center', fontSize: '14pt', fontWeight: 'bold', margin: '3mm 0' }}>
+        <div style={{ textAlign: 'center', fontSize: '14px', fontWeight: 'bold', margin: '2mm 0' }}>
           Total: ₹{total}
         </div>
 
         {/* Footer */}
-        <div style={{ textAlign: 'center', fontSize: '10pt', marginTop: '4mm' }}>
+        <div style={{ textAlign: 'center', fontSize: '9px', marginTop: '3mm' }}>
           Thank You! Visit Again.
         </div>
       </div>
