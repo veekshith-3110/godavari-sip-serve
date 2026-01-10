@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { menuItems as initialMenuItems, MenuItem, Category } from '@/data/mockData';
-import { Edit2, Plus, X } from 'lucide-react';
+import { Edit2, Plus, X, Upload } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 
 const MenuManager = () => {
@@ -128,6 +128,18 @@ const EditItemModal = ({ item, categories, onClose, onSave }: EditItemModalProps
       available: true,
     }
   );
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setFormData({ ...formData, image: event.target?.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = () => {
     if (formData.name && formData.price && formData.category && formData.image) {
@@ -196,15 +208,23 @@ const EditItemModal = ({ item, categories, onClose, onSave }: EditItemModalProps
 
           <div>
             <label className="text-sm font-medium text-muted-foreground mb-2 block">
-              Image URL
+              Image
             </label>
             <input
-              type="text"
-              value={formData.image}
-              onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-              className="w-full p-3 rounded-xl border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="https://..."
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageSelect}
+              className="hidden"
             />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full p-3 rounded-xl border border-dashed border-input bg-background text-muted-foreground hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2"
+            >
+              <Upload className="w-5 h-5" />
+              {formData.image ? 'Change Photo' : 'Select Photo'}
+            </button>
           </div>
 
           {formData.image && (
