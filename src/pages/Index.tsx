@@ -2,7 +2,6 @@ import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Settings, ShoppingCart, X } from 'lucide-react';
 import { menuItems, MenuItem, CartItem, Category } from '@/data/mockData';
-import { useSound } from '@/hooks/useSound';
 import ProductCard from '@/components/ProductCard';
 import CategoryTabs from '@/components/CategoryTabs';
 import Cart from '@/components/Cart';
@@ -17,7 +16,6 @@ const Index = () => {
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
-  const { playBeep, playSuccess } = useSound();
   const { toast } = useToast();
 
   const filteredItems = activeCategory === 'all' 
@@ -25,7 +23,6 @@ const Index = () => {
     : menuItems.filter(item => item.category === activeCategory);
 
   const handleAddToCart = (item: MenuItem) => {
-    playBeep();
     setCart(prevCart => {
       const existingItem = prevCart.find(cartItem => cartItem.id === item.id);
       if (existingItem) {
@@ -49,8 +46,6 @@ const Index = () => {
 
   const handlePrint = () => {
     if (cart.length === 0) return;
-    
-    playSuccess();
     
     // Trigger print
     const printContent = printRef.current;
