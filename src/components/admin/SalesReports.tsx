@@ -246,13 +246,18 @@ const MonthDetailCard = ({ month, year, isExpanded, onToggle }: {
           </div>
           
           {/* Day Grid */}
+          <p className="text-[10px] text-muted-foreground">Click on a date to see item-wise sales:</p>
           <div className="grid grid-cols-7 gap-1">
             {days.map((day) => (
               <button
                 key={day.day}
-                onClick={() => setSelectedDay(selectedDay === day.day ? null : day.day)}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedDay(selectedDay === day.day ? null : day.day);
+                }}
                 className={cn(
-                  "p-1.5 text-center rounded text-[10px] transition-colors",
+                  "p-1.5 text-center rounded text-[10px] transition-colors cursor-pointer",
                   selectedDay === day.day 
                     ? "bg-primary text-primary-foreground" 
                     : "bg-muted/50 hover:bg-muted text-foreground"
