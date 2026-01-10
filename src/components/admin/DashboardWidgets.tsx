@@ -1,96 +1,16 @@
 import { useState } from 'react';
-import { getTodayStats, getHourlyData, mockOrders, menuItems, Category } from '@/data/mockData';
-import { Wallet, TrendingUp, MinusCircle, Package, Calendar as CalendarIcon, Coffee, UtensilsCrossed, Droplets, Flame } from 'lucide-react';
+import { Wallet, TrendingUp, MinusCircle, Package, Calendar as CalendarIcon, Coffee, UtensilsCrossed, Droplets, Flame, Loader2 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { format, isSameDay } from 'date-fns';
+import { format, isSameDay, startOfDay } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useOrders } from '@/hooks/useOrders';
+import { useExpenses } from '@/hooks/useExpenses';
+import { useMenu, MenuCategory } from '@/context/MenuContext';
 
-// Generate mock data for a specific date
-const getStatsForDate = (date: Date) => {
-  const isToday = isSameDay(date, new Date());
-  
-  if (isToday) {
-    return getTodayStats();
-  }
-  
-  const seed = date.getDate() + date.getMonth() * 31;
-  const totalSales = 2500 + ((seed * 13) % 3500);
-  const totalExpenses = 200 + (seed % 300);
-  const totalChais = 80 + (seed % 70);
-  
-  return {
-    totalSales,
-    totalExpenses,
-    cashInDrawer: totalSales - totalExpenses,
-    totalChais,
-  };
-};
-
-// Generate item sales for a specific date
-const getItemsForDate = (date: Date) => {
-  const isToday = isSameDay(date, new Date());
-  
-  if (isToday) {
-    const itemsSoldToday = mockOrders.reduce((acc, order) => {
-      order.items.forEach(item => {
-        if (acc[item.id]) {
-          acc[item.id].quantity += item.quantity;
-          acc[item.id].revenue += item.price * item.quantity;
-        } else {
-          acc[item.id] = {
-            id: item.id,
-            name: item.name,
-            quantity: item.quantity,
-            revenue: item.price * item.quantity,
-            price: item.price,
-            category: item.category,
-          };
-        }
-      });
-      return acc;
-    }, {} as Record<string, { id: string; name: string; quantity: number; revenue: number; price: number; category: string }>);
-    
-    return Object.values(itemsSoldToday).sort((a, b) => b.quantity - a.quantity);
-  }
-  
-  // Generate mock items for past dates
-  const seed = date.getDate() + date.getMonth() * 31;
-  
-  return menuItems.map((item, index) => {
-    const itemSeed = seed + index * 7;
-    const quantity = Math.floor((itemSeed % 12) + 3);
-    return {
-      id: item.id,
-      name: item.name,
-      quantity,
-      revenue: quantity * item.price,
-      price: item.price,
-      category: item.category,
-    };
-  }).sort((a, b) => b.quantity - a.quantity);
-};
-
-// Generate hourly data for a specific date
-const getHourlyDataForDate = (date: Date) => {
-  const isToday = isSameDay(date, new Date());
-  
-  if (isToday) {
-    return getHourlyData();
-  }
-  
-  const seed = date.getDate() + date.getMonth() * 31;
-  const hours = ['6AM', '7AM', '8AM', '9AM', '10AM', '11AM', '12PM', '1PM', '2PM', '3PM', '4PM', '5PM'];
-  
-  return hours.map((hour, index) => ({
-    hour,
-    sales: 100 + ((seed + index * 17) % 500),
-  }));
-};
-
-const categoryConfig: Record<Category, { label: string; icon: React.ReactNode; color: string }> = {
+const categoryConfig: Record<MenuCategory, { label: string; icon: React.ReactNode; color: string }> = {
   hot: { label: 'Hot', icon: <Coffee className="w-3.5 h-3.5" />, color: 'text-orange-500 bg-orange-500/10' },
   snacks: { label: 'Snacks', icon: <UtensilsCrossed className="w-3.5 h-3.5" />, color: 'text-yellow-600 bg-yellow-500/10' },
   cold: { label: 'Cold', icon: <Droplets className="w-3.5 h-3.5" />, color: 'text-blue-500 bg-blue-500/10' },
@@ -99,24 +19,92 @@ const categoryConfig: Record<Category, { label: string; icon: React.ReactNode; c
 
 const DashboardWidgets = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  
-  const stats = getStatsForDate(selectedDate);
-  const hourlyData = getHourlyDataForDate(selectedDate);
-  const itemsSoldArray = getItemsForDate(selectedDate);
+  const { orders, loading: ordersLoading } = useOrders();
+  const { expenses, loading: expensesLoading } = useExpenses();
+  const { menuItems } = useMenu();
   
   const isToday = isSameDay(selectedDate, new Date());
   const dateLabel = isToday ? 'Today' : format(selectedDate, 'dd MMM yyyy');
 
+  // Filter orders for selected date
+  const selectedDateStart = startOfDay(selectedDate);
+  const selectedDateEnd = new Date(selectedDateStart);
+  selectedDateEnd.setDate(selectedDateEnd.getDate() + 1);
+
+  const filteredOrders = orders.filter(order => {
+    const orderDate = new Date(order.createdAt);
+    return orderDate >= selectedDateStart && orderDate < selectedDateEnd;
+  });
+
+  const filteredExpenses = expenses.filter(exp => {
+    const expDate = new Date(exp.createdAt);
+    return expDate >= selectedDateStart && expDate < selectedDateEnd;
+  });
+
+  // Calculate stats
+  const totalSales = filteredOrders.reduce((sum, order) => sum + order.total, 0);
+  const totalExpenses = filteredExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+  const cashInDrawer = totalSales - totalExpenses;
+
+  // Calculate items sold
+  const itemsSold: Record<string, { id: string; name: string; quantity: number; revenue: number; price: number; category: MenuCategory }> = {};
+  
+  filteredOrders.forEach(order => {
+    order.items.forEach(item => {
+      const menuItem = menuItems.find(m => m.id === item.id);
+      const category = menuItem?.category || 'hot';
+      
+      if (itemsSold[item.id]) {
+        itemsSold[item.id].quantity += item.quantity;
+        itemsSold[item.id].revenue += item.price * item.quantity;
+      } else {
+        itemsSold[item.id] = {
+          id: item.id,
+          name: item.name,
+          quantity: item.quantity,
+          revenue: item.price * item.quantity,
+          price: item.price,
+          category,
+        };
+      }
+    });
+  });
+
+  const itemsSoldArray = Object.values(itemsSold).sort((a, b) => b.quantity - a.quantity);
+
   // Calculate category totals
   const categoryTotals = itemsSoldArray.reduce((acc, item) => {
-    const cat = item.category as Category;
+    const cat = item.category;
     if (!acc[cat]) {
       acc[cat] = { quantity: 0, revenue: 0 };
     }
     acc[cat].quantity += item.quantity;
     acc[cat].revenue += item.revenue;
     return acc;
-  }, {} as Record<Category, { quantity: number; revenue: number }>);
+  }, {} as Record<MenuCategory, { quantity: number; revenue: number }>);
+
+  // Generate hourly data
+  const hourlyData = Array.from({ length: 12 }, (_, i) => {
+    const hour = 6 + i;
+    const hourLabel = hour < 12 ? `${hour}AM` : hour === 12 ? '12PM' : `${hour - 12}PM`;
+    
+    const hourSales = filteredOrders
+      .filter(order => {
+        const orderHour = new Date(order.createdAt).getHours();
+        return orderHour === hour;
+      })
+      .reduce((sum, order) => sum + order.total, 0);
+    
+    return { hour: hourLabel, sales: hourSales };
+  });
+
+  if (ordersLoading || expensesLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3 lg:space-y-4">
@@ -165,7 +153,7 @@ const DashboardWidgets = () => {
               <TrendingUp className="w-3 h-3 lg:w-4 lg:h-4 text-success" />
               <p className="text-[10px] lg:text-xs font-medium text-muted-foreground">Total Sales</p>
             </div>
-            <p className="text-base lg:text-2xl font-extrabold text-foreground">₹{stats.totalSales.toLocaleString()}</p>
+            <p className="text-base lg:text-2xl font-extrabold text-foreground">₹{totalSales.toLocaleString()}</p>
           </div>
         </div>
 
@@ -176,7 +164,7 @@ const DashboardWidgets = () => {
               <MinusCircle className="w-3 h-3 lg:w-4 lg:h-4 text-destructive" />
               <p className="text-[10px] lg:text-xs font-medium text-muted-foreground">Expenses</p>
             </div>
-            <p className="text-base lg:text-2xl font-extrabold text-destructive">₹{stats.totalExpenses.toLocaleString()}</p>
+            <p className="text-base lg:text-2xl font-extrabold text-destructive">₹{totalExpenses.toLocaleString()}</p>
           </div>
         </div>
 
@@ -187,7 +175,9 @@ const DashboardWidgets = () => {
               <Wallet className="w-3 h-3 lg:w-4 lg:h-4 text-success" />
               <p className="text-[10px] lg:text-xs font-medium text-muted-foreground">Net Profit</p>
             </div>
-            <p className="text-base lg:text-2xl font-extrabold text-success">₹{stats.cashInDrawer.toLocaleString()}</p>
+            <p className={cn("text-base lg:text-2xl font-extrabold", cashInDrawer >= 0 ? "text-success" : "text-destructive")}>
+              ₹{cashInDrawer.toLocaleString()}
+            </p>
           </div>
         </div>
       </div>
@@ -202,9 +192,9 @@ const DashboardWidgets = () => {
           <p className="text-[10px] text-muted-foreground">{dateLabel}</p>
         </div>
         <div className="text-center">
-          <p className="text-[10px] text-muted-foreground mb-0.5">Total Revenue</p>
+          <p className="text-[10px] text-muted-foreground mb-0.5">Total Orders</p>
           <p className="text-xl lg:text-2xl font-bold text-green-600">
-            ₹{itemsSoldArray.reduce((sum, item) => sum + item.revenue, 0).toLocaleString()}
+            {filteredOrders.length}
           </p>
           <p className="text-[10px] text-muted-foreground">{dateLabel}</p>
         </div>
@@ -212,7 +202,7 @@ const DashboardWidgets = () => {
 
       {/* Category Summary */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-        {(Object.keys(categoryConfig) as Category[]).map((cat) => {
+        {(Object.keys(categoryConfig) as MenuCategory[]).map((cat) => {
           const config = categoryConfig[cat];
           const data = categoryTotals[cat] || { quantity: 0, revenue: 0 };
           return (
@@ -257,7 +247,7 @@ const DashboardWidgets = () => {
                     <p className="text-[10px] text-muted-foreground">
                       <span className={cn(
                         "px-1 py-0.5 rounded text-[8px]",
-                        categoryConfig[item.category as Category]?.color || 'bg-muted'
+                        categoryConfig[item.category]?.color || 'bg-muted'
                       )}>
                         {item.category}
                       </span>

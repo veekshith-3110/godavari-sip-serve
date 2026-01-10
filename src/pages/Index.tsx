@@ -1,8 +1,9 @@
 import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Settings, ShoppingCart, X } from 'lucide-react';
-import { MenuItem, CartItem, Category } from '@/data/mockData';
-import { useMenu } from '@/context/MenuContext';
+import { Settings, ShoppingCart, X, Loader2 } from 'lucide-react';
+import { useMenu, MenuItem } from '@/context/MenuContext';
+import { useOrders, CartItem } from '@/hooks/useOrders';
+import { useExpenses } from '@/hooks/useExpenses';
 import ProductCard from '@/components/ProductCard';
 import CategoryTabs from '@/components/CategoryTabs';
 import Cart from '@/components/Cart';
@@ -10,13 +11,17 @@ import PrintReceipt from '@/components/PrintReceipt';
 import ExpenseModal from '@/components/ExpenseModal';
 import { useToast } from '@/hooks/use-toast';
 
+type Category = 'hot' | 'snacks' | 'cold' | 'smoke';
+
 const Index = () => {
-  const { menuItems } = useMenu();
+  const { menuItems, loading: menuLoading } = useMenu();
+  const { nextTokenNumber, createOrder } = useOrders();
+  const { addExpense } = useExpenses();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [activeCategory, setActiveCategory] = useState<Category | 'all'>('all');
-  const [tokenNumber, setTokenNumber] = useState(45);
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -46,18 +51,23 @@ const Index = () => {
     setCart([]);
   };
 
-  const handlePrint = () => {
-    if (cart.length === 0) return;
+  const handlePrint = async () => {
+    if (cart.length === 0 || isPrinting) return;
     
-    // Trigger print
-    const printContent = printRef.current;
-    if (printContent) {
+    setIsPrinting(true);
+    const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    
+    // Save order to database
+    const order = await createOrder(cart, total);
+    
+    if (order) {
+      // Trigger print
       const printWindow = window.open('', '_blank');
       if (printWindow) {
         printWindow.document.write(`
           <html>
             <head>
-              <title>Token #${tokenNumber}</title>
+              <title>Token #${order.tokenNumber}</title>
               <style>
                 @page { size: 58mm auto; margin: 0; }
                 body { 
@@ -87,14 +97,14 @@ const Index = () => {
               <div class="divider">--------------------------------</div>
               <div class="token">
                 <div class="token-label">TOKEN</div>
-                <div class="token-number">#${tokenNumber}</div>
+                <div class="token-number">#${order.tokenNumber}</div>
               </div>
               <div class="divider">--------------------------------</div>
               <div class="items">
                 ${cart.map(item => `<div class="item"><span>${item.name}</span><span>x${item.quantity}</span></div>`).join('')}
               </div>
               <div class="divider">--------------------------------</div>
-              <div class="total">Total: ₹${cart.reduce((sum, item) => sum + item.price * item.quantity, 0)}</div>
+              <div class="total">Total: ₹${total}</div>
               <div class="footer">Thank You! Visit Again.</div>
             </body>
           </html>
@@ -103,27 +113,36 @@ const Index = () => {
         printWindow.print();
         printWindow.close();
       }
+
+      toast({
+        title: `Token #${order.tokenNumber} Printed`,
+        description: `₹${total} - ${cart.length} items`,
+      });
+
+      setCart([]);
+      setIsCartOpen(false);
     }
-
-    toast({
-      title: `Token #${tokenNumber} Printed`,
-      description: `₹${cart.reduce((sum, item) => sum + item.price * item.quantity, 0)} - ${cart.length} items`,
-    });
-
-    setTokenNumber(prev => prev + 1);
-    setCart([]);
-    setIsCartOpen(false);
+    
+    setIsPrinting(false);
   };
 
-  const handleExpenseSubmit = (description: string, amount: number) => {
-    toast({
-      title: 'Expense Recorded',
-      description: `${description}: ₹${amount}`,
-    });
+  const handleExpenseSubmit = async (description: string, amount: number) => {
+    await addExpense(description, amount);
   };
 
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+  if (menuLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-10 h-10 animate-spin text-primary" />
+          <p className="text-muted-foreground">Loading menu...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -175,6 +194,11 @@ const Index = () => {
                 />
               ))}
             </div>
+            {filteredItems.length === 0 && (
+              <div className="flex items-center justify-center h-40">
+                <p className="text-muted-foreground">No items available in this category</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -249,7 +273,7 @@ const Index = () => {
       <PrintReceipt
         ref={printRef}
         items={cart}
-        tokenNumber={tokenNumber}
+        tokenNumber={nextTokenNumber}
         total={total}
       />
 
