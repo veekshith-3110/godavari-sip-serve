@@ -1,10 +1,11 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Settings, ShoppingCart, X, Loader2, LogOut } from 'lucide-react';
 import { useMenu, MenuItem } from '@/context/MenuContext';
 import { useOrders, CartItem } from '@/hooks/useOrders';
 import { useExpenses } from '@/hooks/useExpenses';
 import { useAuth } from '@/hooks/useAuth';
+import { usePrinter } from '@/hooks/usePrinter';
 import ProductCard from '@/components/ProductCard';
 import CategoryTabs from '@/components/CategoryTabs';
 import Cart from '@/components/Cart';
@@ -19,6 +20,7 @@ const Index = () => {
   const { nextTokenNumber, createOrder } = useOrders();
   const { addExpense } = useExpenses();
   const { signOut } = useAuth();
+  const { printReceipt, isConnected, isNative, restoreConnection } = usePrinter();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [activeCategory, setActiveCategory] = useState<Category | 'all'>('all');
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
@@ -26,6 +28,11 @@ const Index = () => {
   const [isPrinting, setIsPrinting] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  // Restore printer connection on mount
+  useEffect(() => {
+    restoreConnection();
+  }, [restoreConnection]);
 
   const filteredItems = activeCategory === 'all' 
     ? menuItems.filter(item => item.available)
@@ -63,78 +70,14 @@ const Index = () => {
     const order = await createOrder(cart, total);
     
     if (order) {
-      // Create hidden iframe for silent printing
-      const iframe = document.createElement('iframe');
-      iframe.style.position = 'absolute';
-      iframe.style.top = '-10000px';
-      iframe.style.left = '-10000px';
-      iframe.style.width = '0';
-      iframe.style.height = '0';
-      document.body.appendChild(iframe);
-      
-      const doc = iframe.contentWindow?.document;
-      if (doc) {
-        doc.open();
-        doc.write(`
-          <html>
-            <head>
-              <title>Token #${order.tokenNumber}</title>
-              <style>
-                @page { size: 80mm auto; margin: 0; }
-                @media print {
-                  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-                }
-                body { 
-                  font-family: 'Courier New', monospace; 
-                  font-size: 12px; 
-                  padding: 8px;
-                  margin: 0;
-                  width: 80mm;
-                }
-                .header { text-align: center; }
-                .title { font-size: 16px; font-weight: bold; }
-                .date { font-size: 10px; margin-top: 4px; }
-                .divider { text-align: center; margin: 8px 0; }
-                .token { text-align: center; margin: 16px 0; }
-                .token-label { font-size: 10px; }
-                .token-number { font-size: 32px; font-weight: 800; }
-                .items { margin: 8px 0; }
-                .item { display: flex; justify-content: space-between; margin: 2px 0; }
-                .total { text-align: center; font-weight: bold; font-size: 14px; margin-top: 8px; }
-                .footer { text-align: center; margin-top: 16px; font-size: 10px; }
-              </style>
-            </head>
-            <body>
-              <div class="header">
-                <div class="title">GODAVARI CAFE</div>
-                <div class="date">${new Date().toLocaleDateString('en-IN')} | ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</div>
-              </div>
-              <div class="divider">--------------------------------</div>
-              <div class="token">
-                <div class="token-label">TOKEN</div>
-                <div class="token-number">#${order.tokenNumber}</div>
-              </div>
-              <div class="divider">--------------------------------</div>
-              <div class="items">
-                ${cart.map(item => `<div class="item"><span>${item.name}</span><span>x${item.quantity}</span></div>`).join('')}
-              </div>
-              <div class="divider">--------------------------------</div>
-              <div class="total">Total: ₹${total}</div>
-              <div class="footer">Thank You! Visit Again.</div>
-            </body>
-          </html>
-        `);
-        doc.close();
-        
-        // Auto-print when content is loaded
-        iframe.contentWindow?.focus();
-        iframe.contentWindow?.print();
-        
-        // Remove iframe after a delay
-        setTimeout(() => {
-          document.body.removeChild(iframe);
-        }, 1000);
-      }
+      // Use the printer hook - prints silently if connected via Bluetooth (native app)
+      // Falls back to browser print dialog if not connected or on web
+      await printReceipt(
+        cart.map(item => ({ name: item.name, price: item.price, quantity: item.quantity })),
+        total,
+        order.tokenNumber,
+        'GODAVARI CAFE'
+      );
 
       toast({
         title: `Token #${order.tokenNumber} Printed`,
