@@ -1,5 +1,5 @@
-import { getTodayStats, getHourlyData, mockOrders, menuItems } from '@/data/mockData';
-import { Coffee, Wallet, TrendingUp, MinusCircle, Package } from 'lucide-react';
+import { getTodayStats, getHourlyData, mockOrders } from '@/data/mockData';
+import { Wallet, TrendingUp, MinusCircle, Package } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 const DashboardWidgets = () => {
@@ -33,22 +33,9 @@ const DashboardWidgets = () => {
       <h2 className="text-xl lg:text-2xl font-bold text-foreground">Dashboard</h2>
       
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
-        {/* Chai Counter */}
-        <div className="stat-card p-3 lg:p-4 bg-gradient-to-br from-primary/10 to-primary/5">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-xs lg:text-sm font-medium text-muted-foreground">Chais Today</p>
-              <p className="text-2xl lg:text-4xl font-extrabold text-primary mt-1 lg:mt-2">{stats.totalChais}</p>
-            </div>
-            <div className="p-2 lg:p-3 bg-primary/10 rounded-lg lg:rounded-xl">
-              <Coffee className="w-4 h-4 lg:w-6 lg:h-6 text-primary" />
-            </div>
-          </div>
-        </div>
-
+      <div className="grid grid-cols-3 gap-3 lg:gap-4">
         {/* Total Sales */}
-        <div className="stat-card p-3 lg:p-4">
+        <div className="stat-card p-3 lg:p-4 bg-gradient-to-br from-success/10 to-success/5">
           <div className="flex items-start justify-between">
             <div>
               <p className="text-xs lg:text-sm font-medium text-muted-foreground">Total Sales</p>
@@ -74,7 +61,7 @@ const DashboardWidgets = () => {
         </div>
 
         {/* Cash in Drawer */}
-        <div className="stat-card p-3 lg:p-4 bg-gradient-to-br from-success/10 to-success/5">
+        <div className="stat-card p-3 lg:p-4 bg-gradient-to-br from-primary/10 to-primary/5">
           <div className="flex items-start justify-between">
             <div>
               <p className="text-xs lg:text-sm font-medium text-muted-foreground">Cash in Drawer</p>
