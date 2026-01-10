@@ -1,7 +1,8 @@
 import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Settings, ShoppingCart, X } from 'lucide-react';
-import { menuItems, MenuItem, CartItem, Category } from '@/data/mockData';
+import { MenuItem, CartItem, Category } from '@/data/mockData';
+import { useMenu } from '@/context/MenuContext';
 import ProductCard from '@/components/ProductCard';
 import CategoryTabs from '@/components/CategoryTabs';
 import Cart from '@/components/Cart';
@@ -10,6 +11,7 @@ import ExpenseModal from '@/components/ExpenseModal';
 import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
+  const { menuItems } = useMenu();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [activeCategory, setActiveCategory] = useState<Category | 'all'>('all');
   const [tokenNumber, setTokenNumber] = useState(45);
@@ -19,8 +21,8 @@ const Index = () => {
   const { toast } = useToast();
 
   const filteredItems = activeCategory === 'all' 
-    ? menuItems 
-    : menuItems.filter(item => item.category === activeCategory);
+    ? menuItems.filter(item => item.available)
+    : menuItems.filter(item => item.category === activeCategory && item.available);
 
   const handleAddToCart = (item: MenuItem) => {
     setCart(prevCart => {
