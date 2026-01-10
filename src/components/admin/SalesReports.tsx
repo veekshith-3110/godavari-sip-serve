@@ -405,6 +405,24 @@ const SalesReports = () => {
           </Popover>
         </div>
         
+        {/* Monthly Total Summary */}
+        <div className="grid grid-cols-2 gap-2 mb-3 p-3 bg-primary/5 rounded-lg border border-primary/20">
+          <div className="text-center border-r border-primary/20">
+            <p className="text-[10px] text-muted-foreground mb-0.5">Total Items Sold</p>
+            <p className="text-lg md:text-xl font-bold text-primary">
+              {Object.values(monthlyItemReport.categoryTotals).reduce((sum, cat) => sum + cat.quantity, 0).toLocaleString()}
+            </p>
+            <p className="text-[10px] text-muted-foreground">in {monthlyItemReport.daysCount} days</p>
+          </div>
+          <div className="text-center">
+            <p className="text-[10px] text-muted-foreground mb-0.5">Total Revenue</p>
+            <p className="text-lg md:text-xl font-bold text-green-600">
+              ₹{Object.values(monthlyItemReport.categoryTotals).reduce((sum, cat) => sum + cat.revenue, 0).toLocaleString()}
+            </p>
+            <p className="text-[10px] text-muted-foreground">{format(selectedMonth, 'MMMM yyyy')}</p>
+          </div>
+        </div>
+        
         {/* Category Summary Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
           {(Object.keys(monthlyItemReport.categoryTotals) as Category[]).map((cat) => {
