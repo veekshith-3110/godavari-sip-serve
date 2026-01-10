@@ -1,20 +1,15 @@
 import { useState, useRef } from 'react';
-import { menuItems as initialMenuItems, MenuItem, Category } from '@/data/mockData';
+import { MenuItem, Category } from '@/data/mockData';
 import { Edit2, Plus, X, Upload } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
+import { useMenu } from '@/context/MenuContext';
 
 const MenuManager = () => {
-  const [items, setItems] = useState<MenuItem[]>(initialMenuItems);
+  const { menuItems, addMenuItem, updateMenuItem, toggleAvailability } = useMenu();
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const categories: Category[] = ['hot', 'snacks', 'cold', 'smoke'];
-
-  const toggleAvailability = (itemId: string) => {
-    setItems(items.map(item =>
-      item.id === itemId ? { ...item, available: !item.available } : item
-    ));
-  };
 
   const handleEdit = (item: MenuItem) => {
     setEditingItem(item);
@@ -23,11 +18,9 @@ const MenuManager = () => {
 
   const handleSave = (updatedItem: MenuItem) => {
     if (editingItem) {
-      setItems(items.map(item =>
-        item.id === updatedItem.id ? updatedItem : item
-      ));
+      updateMenuItem(updatedItem);
     } else {
-      setItems([...items, { ...updatedItem, id: Date.now().toString() }]);
+      addMenuItem(updatedItem);
     }
     setIsModalOpen(false);
     setEditingItem(null);
@@ -55,7 +48,7 @@ const MenuManager = () => {
 
       {/* Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 lg:gap-4">
-        {items.map((item) => (
+        {menuItems.map((item) => (
           <div
             key={item.id}
             className={`bg-card rounded-xl overflow-hidden border border-border ${
