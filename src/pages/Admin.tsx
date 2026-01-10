@@ -4,6 +4,7 @@ import DashboardWidgets from '@/components/admin/DashboardWidgets';
 import SalesReports from '@/components/admin/SalesReports';
 import MenuManager from '@/components/admin/MenuManager';
 import ExpenseLog from '@/components/admin/ExpenseLog';
+import PrinterSettings from '@/components/admin/PrinterSettings';
 
 const Admin = () => {
   return (
@@ -15,6 +16,7 @@ const Admin = () => {
           <Route path="sales" element={<SalesReports />} />
           <Route path="menu" element={<MenuManager />} />
           <Route path="expenses" element={<ExpenseLog />} />
+          <Route path="printer" element={<PrinterSettings />} />
         </Routes>
       </main>
     </div>
