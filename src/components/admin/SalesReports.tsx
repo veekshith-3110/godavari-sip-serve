@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { menuItems, Category } from '@/data/mockData';
 import { Calendar as CalendarIcon, TrendingUp, TrendingDown, Minus, Coffee, UtensilsCrossed, Droplets, Flame, ChevronDown, ChevronUp } from 'lucide-react';
-import { format, startOfWeek, addDays, subWeeks, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
-import { Calendar } from '@/components/ui/calendar';
+import { format, startOfWeek, addDays, subWeeks, startOfMonth, endOfMonth, eachDayOfInterval, setMonth, setYear } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -546,15 +546,52 @@ const SalesReports = () => {
                 {format(selectedMonth, 'MMM yyyy')}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="end">
-              <Calendar
-                mode="single"
-                selected={selectedMonth}
-                onSelect={(date) => date && setSelectedMonth(date)}
-                disabled={(date) => date > new Date()}
-                initialFocus
-                className={cn("p-2 pointer-events-auto")}
-              />
+            <PopoverContent className="w-auto p-3 pointer-events-auto" align="end">
+              <div className="space-y-3">
+                {/* Year Selector */}
+                <Select
+                  value={selectedMonth.getFullYear().toString()}
+                  onValueChange={(year) => setSelectedMonth(setYear(selectedMonth, parseInt(year)))}
+                >
+                  <SelectTrigger className="w-full h-8 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[2022, 2023, 2024, 2025, 2026].map((year) => (
+                      <SelectItem key={year} value={year.toString()} className="text-xs">
+                        {year}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                
+                {/* Month Grid */}
+                <div className="grid grid-cols-3 gap-1.5">
+                  {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((month, index) => {
+                    const isSelected = selectedMonth.getMonth() === index;
+                    const monthDate = setMonth(setYear(new Date(), selectedMonth.getFullYear()), index);
+                    const isFuture = monthDate > new Date();
+                    
+                    return (
+                      <button
+                        key={month}
+                        type="button"
+                        disabled={isFuture}
+                        onClick={() => setSelectedMonth(setMonth(selectedMonth, index))}
+                        className={cn(
+                          "px-2 py-1.5 text-xs rounded-md transition-colors",
+                          isSelected 
+                            ? "bg-primary text-primary-foreground" 
+                            : "hover:bg-muted",
+                          isFuture && "opacity-40 cursor-not-allowed"
+                        )}
+                      >
+                        {month}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </PopoverContent>
           </Popover>
         </div>
