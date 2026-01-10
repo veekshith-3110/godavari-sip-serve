@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { mockOrders, menuItems } from '@/data/mockData';
-import { Calendar as CalendarIcon, CalendarDays, CalendarRange, TrendingUp, Star } from 'lucide-react';
-import { format, isSameDay, subDays } from 'date-fns';
-import { Badge } from '@/components/ui/badge';
+import { Calendar as CalendarIcon, CalendarDays, CalendarRange, TrendingUp } from 'lucide-react';
+import { format, isSameDay } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
@@ -58,29 +57,6 @@ const generateMockOrdersForDate = (date: Date) => {
   return generatedOrders;
 };
 
-// Generate last 7 days sales data
-const getLast7DaysSales = () => {
-  const today = new Date();
-  const data = [];
-  
-  for (let i = 0; i < 7; i++) {
-    const date = subDays(today, i);
-    const seed = date.getDate() + date.getMonth() * 31 + date.getFullYear();
-    const orders = 40 + (seed % 21); // Random 40-60
-    const sales = 3000 + ((seed * 7) % 3001); // Random 3000-6000
-    
-    data.push({
-      date,
-      dateFormatted: format(date, 'dd MMM, EEE'),
-      orders,
-      sales,
-      isToday: i === 0,
-    });
-  }
-  
-  return data;
-};
-
 const SalesReports = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   
@@ -90,14 +66,6 @@ const SalesReports = () => {
   
   const isToday = isSameDay(selectedDate, new Date());
   const dateLabel = isToday ? 'Today' : format(selectedDate, 'dd MMM');
-  
-  const last7DaysData = getLast7DaysSales();
-  
-  const getStatus = (sales: number) => {
-    if (sales > 5000) return { label: 'Excellent', color: 'text-green-600' };
-    if (sales > 3000) return { label: 'Good', color: 'text-blue-600' };
-    return { label: 'Low', color: 'text-orange-500' };
-  };
 
   return (
     <div className="space-y-2 md:space-y-3">
@@ -168,51 +136,6 @@ const SalesReports = () => {
           </div>
           <p className="text-sm md:text-lg font-bold text-foreground">₹5.8L</p>
           <p className="text-[10px] md:text-xs text-muted-foreground">7.2K orders</p>
-        </div>
-      </div>
-
-      {/* Last 7 Days Performance - NEW SECTION */}
-      <div className="stat-card p-2 md:p-3">
-        <div className="flex items-center gap-2 mb-2">
-          <h3 className="text-xs md:text-sm font-bold text-foreground">Last 7 Days Performance</h3>
-          <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-primary/10 text-primary border-0">
-            <Star className="w-2.5 h-2.5 mr-0.5" />
-            Most Important
-          </Badge>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="text-muted-foreground border-b border-border">
-                <th className="pb-1.5 text-left font-medium">Date</th>
-                <th className="pb-1.5 text-right font-medium">Orders</th>
-                <th className="pb-1.5 text-right font-medium">Sales</th>
-                <th className="pb-1.5 text-right font-medium">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/50">
-              {last7DaysData.map((day, index) => {
-                const status = getStatus(day.sales);
-                return (
-                  <tr key={index} className={day.isToday ? 'bg-primary/5' : ''}>
-                    <td className="py-1.5 font-medium text-foreground">
-                      {day.isToday ? (
-                        <span className="flex items-center gap-1">
-                          {day.dateFormatted}
-                          <span className="text-[10px] text-primary font-semibold">(Today)</span>
-                        </span>
-                      ) : (
-                        day.dateFormatted
-                      )}
-                    </td>
-                    <td className="py-1.5 text-right text-muted-foreground">{day.orders}</td>
-                    <td className="py-1.5 text-right font-semibold text-foreground">₹{day.sales.toLocaleString()}</td>
-                    <td className={`py-1.5 text-right font-medium ${status.color}`}>{status.label}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
         </div>
       </div>
 
