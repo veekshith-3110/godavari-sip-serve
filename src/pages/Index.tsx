@@ -1,9 +1,10 @@
 import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Settings, ShoppingCart, X, Loader2 } from 'lucide-react';
+import { Settings, ShoppingCart, X, Loader2, LogOut } from 'lucide-react';
 import { useMenu, MenuItem } from '@/context/MenuContext';
 import { useOrders, CartItem } from '@/hooks/useOrders';
 import { useExpenses } from '@/hooks/useExpenses';
+import { useAuth } from '@/hooks/useAuth';
 import ProductCard from '@/components/ProductCard';
 import CategoryTabs from '@/components/CategoryTabs';
 import Cart from '@/components/Cart';
@@ -17,6 +18,7 @@ const Index = () => {
   const { menuItems, loading: menuLoading } = useMenu();
   const { nextTokenNumber, createOrder } = useOrders();
   const { addExpense } = useExpenses();
+  const { signOut } = useAuth();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [activeCategory, setActiveCategory] = useState<Category | 'all'>('all');
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
@@ -168,6 +170,13 @@ const Index = () => {
           >
             <Settings className="w-5 h-5" strokeWidth={2} />
           </Link>
+          <button
+            onClick={signOut}
+            className="p-2.5 rounded-xl hover:bg-white/10 transition-all duration-200"
+            title="Sign Out"
+          >
+            <LogOut className="w-5 h-5" strokeWidth={2} />
+          </button>
         </div>
       </header>
 

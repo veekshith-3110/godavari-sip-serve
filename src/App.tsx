@@ -4,7 +4,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { MenuProvider } from "@/context/MenuContext";
-import { PinProtection } from "@/components/PinProtection";
 import { useAuth } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import Admin from "./pages/Admin";
@@ -44,11 +43,9 @@ const App = () => (
             path="/"
             element={
               <ProtectedRoute>
-                <PinProtection>
-                  <MenuProvider>
-                    <Index />
-                  </MenuProvider>
-                </PinProtection>
+                <MenuProvider>
+                  <Index />
+                </MenuProvider>
               </ProtectedRoute>
             }
           />
@@ -56,11 +53,9 @@ const App = () => (
             path="/admin/*"
             element={
               <ProtectedRoute>
-                <PinProtection>
-                  <MenuProvider>
-                    <Admin />
-                  </MenuProvider>
-                </PinProtection>
+                <MenuProvider>
+                  <Admin />
+                </MenuProvider>
               </ProtectedRoute>
             }
           />
