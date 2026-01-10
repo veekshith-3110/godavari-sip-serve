@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Lock, Eye, EyeOff } from 'lucide-react';
+import { Lock, Eye, EyeOff, LogOut } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 // Change this PIN to your desired code
 const APP_PIN = '799313';
@@ -17,6 +19,8 @@ export const PinProtection = ({ children }: PinProtectionProps) => {
   const [error, setError] = useState('');
   const [showPin, setShowPin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Check if already unlocked in this session
@@ -45,6 +49,12 @@ export const PinProtection = ({ children }: PinProtectionProps) => {
     setPin('');
   };
 
+  const handleSignOut = async () => {
+    sessionStorage.removeItem(STORAGE_KEY);
+    await signOut();
+    navigate('/auth');
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -57,13 +67,22 @@ export const PinProtection = ({ children }: PinProtectionProps) => {
     return (
       <>
         {children}
-        <button
-          onClick={handleLock}
-          className="fixed bottom-4 right-4 p-2 bg-muted hover:bg-muted/80 rounded-full shadow-lg z-50 opacity-50 hover:opacity-100 transition-opacity"
-          title="Lock App"
-        >
-          <Lock className="h-4 w-4" />
-        </button>
+        <div className="fixed bottom-4 right-4 flex gap-2 z-50">
+          <button
+            onClick={handleLock}
+            className="p-2 bg-muted hover:bg-muted/80 rounded-full shadow-lg opacity-50 hover:opacity-100 transition-opacity"
+            title="Lock App"
+          >
+            <Lock className="h-4 w-4" />
+          </button>
+          <button
+            onClick={handleSignOut}
+            className="p-2 bg-destructive/10 hover:bg-destructive/20 rounded-full shadow-lg opacity-50 hover:opacity-100 transition-opacity text-destructive"
+            title="Sign Out"
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
+        </div>
       </>
     );
   }
@@ -79,7 +98,12 @@ export const PinProtection = ({ children }: PinProtectionProps) => {
           </div>
           
           <h1 className="text-2xl font-bold text-center mb-2">POS System</h1>
-          <p className="text-muted-foreground text-center mb-6">Enter PIN to access</p>
+          <p className="text-muted-foreground text-center mb-1">Enter PIN to access</p>
+          {user && (
+            <p className="text-xs text-primary text-center mb-4">
+              Logged in as: {user.email}
+            </p>
+          )}
           
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="relative">
@@ -112,11 +136,14 @@ export const PinProtection = ({ children }: PinProtectionProps) => {
               Unlock
             </Button>
           </form>
+          
+          <button
+            onClick={handleSignOut}
+            className="w-full mt-4 text-sm text-muted-foreground hover:text-destructive transition-colors"
+          >
+            Sign out of account
+          </button>
         </div>
-        
-        <p className="text-xs text-muted-foreground text-center mt-4">
-          Default PIN: 1234 (change in code)
-        </p>
       </div>
     </div>
   );
