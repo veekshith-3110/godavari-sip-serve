@@ -33,41 +33,41 @@ const DashboardWidgets = () => {
       <h2 className="text-xl lg:text-2xl font-bold text-foreground">Dashboard</h2>
       
       {/* Stats Grid */}
-      <div className="grid grid-cols-3 gap-3 lg:gap-4">
+      <div className="grid grid-cols-3 gap-2 lg:gap-4">
         {/* Total Sales */}
-        <div className="stat-card p-3 lg:p-4 bg-gradient-to-br from-success/10 to-success/5">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-xs lg:text-sm font-medium text-muted-foreground">Total Sales</p>
-              <p className="text-2xl lg:text-4xl font-extrabold text-foreground mt-1 lg:mt-2">₹{stats.totalSales}</p>
+        <div className="stat-card p-2 lg:p-4 bg-gradient-to-br from-success/10 to-success/5 overflow-hidden">
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-1">
+            <div className="min-w-0">
+              <p className="text-[10px] lg:text-sm font-medium text-muted-foreground truncate">Total Sales</p>
+              <p className="text-lg lg:text-4xl font-extrabold text-foreground mt-0.5 lg:mt-2">₹{stats.totalSales}</p>
             </div>
-            <div className="p-2 lg:p-3 bg-success/10 rounded-lg lg:rounded-xl">
+            <div className="hidden lg:flex p-2 lg:p-3 bg-success/10 rounded-lg lg:rounded-xl flex-shrink-0">
               <TrendingUp className="w-4 h-4 lg:w-6 lg:h-6 text-success" />
             </div>
           </div>
         </div>
 
         {/* Expenses */}
-        <div className="stat-card p-3 lg:p-4">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-xs lg:text-sm font-medium text-muted-foreground">Expenses</p>
-              <p className="text-2xl lg:text-4xl font-extrabold text-destructive mt-1 lg:mt-2">₹{stats.totalExpenses}</p>
+        <div className="stat-card p-2 lg:p-4 overflow-hidden">
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-1">
+            <div className="min-w-0">
+              <p className="text-[10px] lg:text-sm font-medium text-muted-foreground truncate">Expenses</p>
+              <p className="text-lg lg:text-4xl font-extrabold text-destructive mt-0.5 lg:mt-2">₹{stats.totalExpenses}</p>
             </div>
-            <div className="p-2 lg:p-3 bg-destructive/10 rounded-lg lg:rounded-xl">
+            <div className="hidden lg:flex p-2 lg:p-3 bg-destructive/10 rounded-lg lg:rounded-xl flex-shrink-0">
               <MinusCircle className="w-4 h-4 lg:w-6 lg:h-6 text-destructive" />
             </div>
           </div>
         </div>
 
         {/* Cash in Drawer */}
-        <div className="stat-card p-3 lg:p-4 bg-gradient-to-br from-primary/10 to-primary/5">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-xs lg:text-sm font-medium text-muted-foreground">Cash in Drawer</p>
-              <p className="text-2xl lg:text-4xl font-extrabold text-success mt-1 lg:mt-2">₹{stats.cashInDrawer}</p>
+        <div className="stat-card p-2 lg:p-4 bg-gradient-to-br from-primary/10 to-primary/5 overflow-hidden">
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-1">
+            <div className="min-w-0">
+              <p className="text-[10px] lg:text-sm font-medium text-muted-foreground truncate">Cash in Drawer</p>
+              <p className="text-lg lg:text-4xl font-extrabold text-success mt-0.5 lg:mt-2">₹{stats.cashInDrawer}</p>
             </div>
-            <div className="p-2 lg:p-3 bg-success/10 rounded-lg lg:rounded-xl">
+            <div className="hidden lg:flex p-2 lg:p-3 bg-success/10 rounded-lg lg:rounded-xl flex-shrink-0">
               <Wallet className="w-4 h-4 lg:w-6 lg:h-6 text-success" />
             </div>
           </div>
