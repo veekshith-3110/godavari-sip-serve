@@ -8,18 +8,18 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const monthlyData = [
-  { name: 'Jan', orders: 580, sales: 45200 },
-  { name: 'Feb', orders: 520, sales: 41800 },
-  { name: 'Mar', orders: 610, sales: 48600 },
-  { name: 'Apr', orders: 590, sales: 47200 },
-  { name: 'May', orders: 640, sales: 51200 },
-  { name: 'Jun', orders: 680, sales: 54400 },
-  { name: 'Jul', orders: 720, sales: 57600 },
-  { name: 'Aug', orders: 690, sales: 55200 },
-  { name: 'Sep', orders: 650, sales: 52000 },
-  { name: 'Oct', orders: 612, sales: 48200 },
-  { name: 'Nov', orders: 0, sales: 0 },
-  { name: 'Dec', orders: 0, sales: 0 },
+  { name: 'Jan', orders: 580, sales: 45200, expenses: 12500, items: 1740 },
+  { name: 'Feb', orders: 520, sales: 41800, expenses: 11200, items: 1560 },
+  { name: 'Mar', orders: 610, sales: 48600, expenses: 13100, items: 1830 },
+  { name: 'Apr', orders: 590, sales: 47200, expenses: 12800, items: 1770 },
+  { name: 'May', orders: 640, sales: 51200, expenses: 14000, items: 1920 },
+  { name: 'Jun', orders: 680, sales: 54400, expenses: 14800, items: 2040 },
+  { name: 'Jul', orders: 720, sales: 57600, expenses: 15600, items: 2160 },
+  { name: 'Aug', orders: 690, sales: 55200, expenses: 15000, items: 2070 },
+  { name: 'Sep', orders: 650, sales: 52000, expenses: 14200, items: 1950 },
+  { name: 'Oct', orders: 612, sales: 48200, expenses: 13000, items: 1836 },
+  { name: 'Nov', orders: 0, sales: 0, expenses: 0, items: 0 },
+  { name: 'Dec', orders: 0, sales: 0, expenses: 0, items: 0 },
 ];
 
 const yearlyData = [
@@ -164,58 +164,101 @@ const SalesReports = () => {
         )}
       </div>
 
-      {/* Monthly & Yearly Reports - Compact Tables */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-        {/* Monthly */}
-        <div className="stat-card p-2 md:p-3">
-          <h3 className="text-xs md:text-sm font-bold text-foreground mb-2">Monthly (2024)</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="text-muted-foreground border-b border-border">
-                  <th className="pb-1 text-left font-medium">Mon</th>
-                  <th className="pb-1 text-right font-medium">Orders</th>
-                  <th className="pb-1 text-right font-medium">Sales</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/50">
-                {monthlyData.slice(0, 6).map((month) => (
-                  <tr key={month.name}>
-                    <td className="py-1 font-medium text-foreground">{month.name}</td>
-                    <td className="py-1 text-right text-muted-foreground">{month.orders}</td>
-                    <td className="py-1 text-right font-semibold text-foreground">₹{(month.sales / 1000).toFixed(1)}K</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Yearly */}
-        <div className="stat-card p-2 md:p-3">
-          <h3 className="text-xs md:text-sm font-bold text-foreground mb-2">Yearly</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="text-muted-foreground border-b border-border">
-                  <th className="pb-1 text-left font-medium">Year</th>
-                  <th className="pb-1 text-right font-medium">Sales</th>
-                  <th className="pb-1 text-right font-medium">Growth</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/50">
-                {yearlyData.map((year) => (
-                  <tr key={year.year}>
-                    <td className="py-1 font-medium text-foreground">{year.year}</td>
-                    <td className="py-1 text-right font-semibold text-foreground">₹{(year.sales / 100000).toFixed(1)}L</td>
-                    <td className={`py-1 text-right font-medium ${year.growth >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                      {year.growth >= 0 ? '+' : ''}{year.growth}%
+      {/* Detailed Monthly Report - Full Width */}
+      <div className="stat-card p-2 md:p-3">
+        <h3 className="text-xs md:text-sm font-bold text-foreground mb-2">Monthly Report 2024 (Detailed)</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="text-muted-foreground border-b border-border">
+                <th className="pb-1.5 text-left font-medium">Month</th>
+                <th className="pb-1.5 text-right font-medium">Orders</th>
+                <th className="pb-1.5 text-right font-medium">Items</th>
+                <th className="pb-1.5 text-right font-medium">Sales</th>
+                <th className="pb-1.5 text-right font-medium hidden sm:table-cell">Expenses</th>
+                <th className="pb-1.5 text-right font-medium">Profit</th>
+                <th className="pb-1.5 text-right font-medium hidden md:table-cell">Avg/Day</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border/50">
+              {monthlyData.map((month, index) => {
+                const profit = month.sales - month.expenses;
+                const avgPerDay = month.sales > 0 ? Math.round(month.sales / 30) : 0;
+                const prevMonth = index > 0 ? monthlyData[index - 1] : null;
+                const growth = prevMonth && prevMonth.sales > 0 
+                  ? ((month.sales - prevMonth.sales) / prevMonth.sales * 100).toFixed(1)
+                  : null;
+                
+                return (
+                  <tr key={month.name} className={month.sales === 0 ? 'opacity-40' : ''}>
+                    <td className="py-1.5 font-medium text-foreground">{month.name}</td>
+                    <td className="py-1.5 text-right text-muted-foreground">{month.orders}</td>
+                    <td className="py-1.5 text-right text-muted-foreground">{month.items}</td>
+                    <td className="py-1.5 text-right font-semibold text-foreground">₹{(month.sales / 1000).toFixed(1)}K</td>
+                    <td className="py-1.5 text-right text-red-400 hidden sm:table-cell">₹{(month.expenses / 1000).toFixed(1)}K</td>
+                    <td className={`py-1.5 text-right font-semibold ${profit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                      ₹{(profit / 1000).toFixed(1)}K
+                    </td>
+                    <td className="py-1.5 text-right text-muted-foreground hidden md:table-cell">
+                      ₹{avgPerDay.toLocaleString()}
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                );
+              })}
+            </tbody>
+            <tfoot className="border-t-2 border-border">
+              <tr className="font-bold">
+                <td className="py-1.5 text-foreground">Total</td>
+                <td className="py-1.5 text-right text-foreground">
+                  {monthlyData.reduce((sum, m) => sum + m.orders, 0)}
+                </td>
+                <td className="py-1.5 text-right text-foreground">
+                  {monthlyData.reduce((sum, m) => sum + m.items, 0)}
+                </td>
+                <td className="py-1.5 text-right text-foreground">
+                  ₹{(monthlyData.reduce((sum, m) => sum + m.sales, 0) / 1000).toFixed(1)}K
+                </td>
+                <td className="py-1.5 text-right text-red-400 hidden sm:table-cell">
+                  ₹{(monthlyData.reduce((sum, m) => sum + m.expenses, 0) / 1000).toFixed(1)}K
+                </td>
+                <td className="py-1.5 text-right text-green-500">
+                  ₹{((monthlyData.reduce((sum, m) => sum + m.sales, 0) - monthlyData.reduce((sum, m) => sum + m.expenses, 0)) / 1000).toFixed(1)}K
+                </td>
+                <td className="py-1.5 text-right text-muted-foreground hidden md:table-cell">-</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      {/* Yearly Report */}
+      <div className="stat-card p-2 md:p-3">
+        <h3 className="text-xs md:text-sm font-bold text-foreground mb-2">Yearly Summary</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="text-muted-foreground border-b border-border">
+                <th className="pb-1 text-left font-medium">Year</th>
+                <th className="pb-1 text-right font-medium">Orders</th>
+                <th className="pb-1 text-right font-medium">Sales</th>
+                <th className="pb-1 text-right font-medium">Avg/Month</th>
+                <th className="pb-1 text-right font-medium">Growth</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border/50">
+              {yearlyData.map((year) => (
+                <tr key={year.year}>
+                  <td className="py-1.5 font-medium text-foreground">{year.year}</td>
+                  <td className="py-1.5 text-right text-muted-foreground">{year.orders.toLocaleString()}</td>
+                  <td className="py-1.5 text-right font-semibold text-foreground">₹{(year.sales / 100000).toFixed(1)}L</td>
+                  <td className="py-1.5 text-right text-muted-foreground">₹{(year.sales / 12 / 1000).toFixed(1)}K</td>
+                  <td className={`py-1.5 text-right font-medium ${year.growth >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                    {year.growth >= 0 ? '+' : ''}{year.growth}%
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
