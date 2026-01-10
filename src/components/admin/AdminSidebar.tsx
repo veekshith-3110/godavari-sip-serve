@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, BarChart3, UtensilsCrossed, Receipt, ArrowLeft, Menu, X } from 'lucide-react';
+import { LayoutDashboard, BarChart3, UtensilsCrossed, Receipt, ArrowLeft, Menu, X, Printer } from 'lucide-react';
 import { useState } from 'react';
 
 const menuItems = [
@@ -7,6 +7,7 @@ const menuItems = [
   { icon: BarChart3, label: 'Sales Reports', path: '/admin/sales' },
   { icon: UtensilsCrossed, label: 'Menu Manager', path: '/admin/menu' },
   { icon: Receipt, label: 'Expense Log', path: '/admin/expenses' },
+  { icon: Printer, label: 'Printer Settings', path: '/admin/printer' },
 ];
 
 const AdminSidebar = () => {
