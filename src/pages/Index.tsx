@@ -128,26 +128,26 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Top Bar */}
-      <header className="bg-primary text-primary-foreground px-4 py-3 flex items-center justify-between shadow-lg sticky top-0 z-40">
-        <h1 className="text-xl md:text-2xl font-extrabold tracking-tight">GODAVARI CAFE</h1>
-        <div className="flex items-center gap-2">
+      <header className="bg-primary text-primary-foreground px-5 py-4 flex items-center justify-between shadow-md sticky top-0 z-40">
+        <h1 className="text-lg md:text-xl font-bold tracking-wide uppercase">GODAVARI CAFE</h1>
+        <div className="flex items-center gap-3">
           {/* Mobile Cart Button */}
           <button
             onClick={() => setIsCartOpen(true)}
-            className="lg:hidden relative p-2 rounded-lg hover:bg-primary-foreground/10 transition-colors"
+            className="lg:hidden relative p-2.5 rounded-xl hover:bg-white/10 transition-all duration-200"
           >
-            <ShoppingCart className="w-6 h-6" />
+            <ShoppingCart className="w-5 h-5" strokeWidth={2} />
             {itemCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-destructive text-destructive-foreground text-xs font-bold rounded-full flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-white text-primary text-xs font-bold rounded-full flex items-center justify-center shadow-sm">
                 {itemCount}
               </span>
             )}
           </button>
           <Link
             to="/admin"
-            className="p-2 rounded-lg hover:bg-primary-foreground/10 transition-colors"
+            className="p-2.5 rounded-xl hover:bg-white/10 transition-all duration-200"
           >
-            <Settings className="w-6 h-6" />
+            <Settings className="w-5 h-5" strokeWidth={2} />
           </Link>
         </div>
       </header>
