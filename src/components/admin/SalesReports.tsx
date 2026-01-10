@@ -66,6 +66,7 @@ const getWeeklyReport = () => {
   const days = [];
   let totalSales = 0;
   let totalOrders = 0;
+  let totalItems = 0;
   let lastWeekTotalSales = 0;
   
   for (let i = 0; i < 7; i++) {
@@ -80,10 +81,12 @@ const getWeeklyReport = () => {
     
     const orders = isFuture ? 0 : 35 + (seed % 30); // 35-65 orders
     const sales = isFuture ? 0 : 2500 + ((seed * 13) % 4000); // ₹2500-6500
+    const items = isFuture ? 0 : 80 + (seed % 50); // 80-130 items per day
     const lastWeekSales = 2500 + ((lastWeekSeed * 13) % 4000);
     
     totalSales += sales;
     totalOrders += orders;
+    totalItems += items;
     lastWeekTotalSales += lastWeekSales;
     
     days.push({
@@ -92,6 +95,7 @@ const getWeeklyReport = () => {
       dateFormatted: format(date, 'dd MMM'),
       orders,
       sales,
+      items,
       lastWeekSales,
       isToday: isCurrentDay,
       isFuture,
@@ -102,7 +106,9 @@ const getWeeklyReport = () => {
     ? ((totalSales - lastWeekTotalSales) / lastWeekTotalSales * 100).toFixed(1)
     : 0;
   
-  return { days, totalSales, totalOrders, weeklyGrowth, weekStart };
+  const daysElapsed = days.filter(d => !d.isFuture).length;
+  
+  return { days, totalSales, totalOrders, totalItems, weeklyGrowth, weekStart, daysElapsed };
 };
 
 // Generate monthly item-wise sales report
@@ -301,6 +307,24 @@ const SalesReports = () => {
              Number(weeklyReport.weeklyGrowth) < 0 ? <TrendingDown className="w-3 h-3" /> :
              <Minus className="w-3 h-3" />}
             {Number(weeklyReport.weeklyGrowth) > 0 ? '+' : ''}{weeklyReport.weeklyGrowth}% vs last week
+          </div>
+        </div>
+        
+        {/* Weekly Total Summary - NEW */}
+        <div className="grid grid-cols-2 gap-2 mb-3 p-3 bg-primary/5 rounded-lg border border-primary/20">
+          <div className="text-center border-r border-primary/20">
+            <p className="text-[10px] text-muted-foreground mb-0.5">Total Items Sold</p>
+            <p className="text-lg md:text-xl font-bold text-primary">
+              {weeklyReport.totalItems.toLocaleString()}
+            </p>
+            <p className="text-[10px] text-muted-foreground">in {weeklyReport.daysElapsed} days</p>
+          </div>
+          <div className="text-center">
+            <p className="text-[10px] text-muted-foreground mb-0.5">Total Revenue</p>
+            <p className="text-lg md:text-xl font-bold text-green-600">
+              ₹{weeklyReport.totalSales.toLocaleString()}
+            </p>
+            <p className="text-[10px] text-muted-foreground">This Week</p>
           </div>
         </div>
         
