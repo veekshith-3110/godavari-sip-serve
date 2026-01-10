@@ -1,10 +1,32 @@
-import { getTodayStats, getHourlyData } from '@/data/mockData';
-import { Coffee, Wallet, TrendingUp, MinusCircle } from 'lucide-react';
+import { getTodayStats, getHourlyData, mockOrders, menuItems } from '@/data/mockData';
+import { Coffee, Wallet, TrendingUp, MinusCircle, Package } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 const DashboardWidgets = () => {
   const stats = getTodayStats();
   const hourlyData = getHourlyData();
+
+  // Calculate items sold today from orders
+  const itemsSoldToday = mockOrders.reduce((acc, order) => {
+    order.items.forEach(item => {
+      if (acc[item.id]) {
+        acc[item.id].quantity += item.quantity;
+        acc[item.id].revenue += item.price * item.quantity;
+      } else {
+        acc[item.id] = {
+          id: item.id,
+          name: item.name,
+          quantity: item.quantity,
+          revenue: item.price * item.quantity,
+          price: item.price,
+          category: item.category,
+        };
+      }
+    });
+    return acc;
+  }, {} as Record<string, { id: string; name: string; quantity: number; revenue: number; price: number; category: string }>);
+
+  const itemsSoldArray = Object.values(itemsSoldToday).sort((a, b) => b.quantity - a.quantity);
 
   return (
     <div className="space-y-4 lg:space-y-6">
@@ -63,6 +85,54 @@ const DashboardWidgets = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Items Sold Today */}
+      <div className="stat-card p-3 lg:p-4">
+        <div className="flex items-center gap-2 mb-3 lg:mb-4">
+          <Package className="w-4 h-4 lg:w-5 lg:h-5 text-primary" />
+          <h3 className="text-base lg:text-lg font-bold text-foreground">Items Sold Today</h3>
+        </div>
+        
+        {itemsSoldArray.length > 0 ? (
+          <div className="space-y-2">
+            {itemsSoldArray.map((item, index) => (
+              <div
+                key={item.id}
+                className="flex items-center justify-between p-3 bg-muted/50 rounded-xl"
+              >
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <span className="w-6 h-6 flex items-center justify-center bg-primary/10 text-primary text-xs font-bold rounded-full flex-shrink-0">
+                    {index + 1}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-sm lg:text-base text-foreground truncate">{item.name}</p>
+                    <p className="text-xs text-muted-foreground capitalize">{item.category} • ₹{item.price} each</p>
+                  </div>
+                </div>
+                <div className="text-right flex-shrink-0 ml-3">
+                  <p className="text-lg lg:text-xl font-extrabold text-primary">×{item.quantity}</p>
+                  <p className="text-xs lg:text-sm text-muted-foreground">₹{item.revenue}</p>
+                </div>
+              </div>
+            ))}
+            
+            {/* Summary */}
+            <div className="flex items-center justify-between p-3 bg-primary/10 rounded-xl mt-3">
+              <span className="font-semibold text-sm lg:text-base text-foreground">Total Items Sold</span>
+              <div className="text-right">
+                <span className="text-lg lg:text-xl font-extrabold text-primary">
+                  {itemsSoldArray.reduce((sum, item) => sum + item.quantity, 0)} items
+                </span>
+                <p className="text-xs lg:text-sm text-muted-foreground">
+                  ₹{itemsSoldArray.reduce((sum, item) => sum + item.revenue, 0)} revenue
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <p className="text-center text-muted-foreground py-8 text-sm lg:text-base">No items sold yet today</p>
+        )}
       </div>
 
       {/* Hourly Rush Chart */}
