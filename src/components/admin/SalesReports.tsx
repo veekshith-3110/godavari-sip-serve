@@ -7,6 +7,43 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
+// Generate day-wise item sales for a specific date
+const generateDayItemSales = (date: Date) => {
+  const seed = date.getDate() + date.getMonth() * 31 + date.getFullYear() * 365;
+  const items: Record<string, number> = {};
+  
+  menuItems.forEach((item, index) => {
+    const itemSeed = seed + index * 7;
+    items[item.name] = Math.floor((itemSeed % 20) + 1); // 1-20 items per day
+  });
+  
+  return items;
+};
+
+// Generate daily data for a month
+const generateMonthDays = (year: number, monthIndex: number) => {
+  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+  const days = [];
+  
+  for (let day = 1; day <= daysInMonth; day++) {
+    const date = new Date(year, monthIndex, day);
+    const itemSales = generateDayItemSales(date);
+    const totalItems = Object.values(itemSales).reduce((a, b) => a + b, 0);
+    const totalRevenue = menuItems.reduce((sum, item) => sum + (itemSales[item.name] || 0) * item.price, 0);
+    
+    days.push({
+      day,
+      date,
+      itemSales,
+      totalItems,
+      totalRevenue,
+      orders: Math.floor(totalItems / 3) + 5, // Approximate orders
+    });
+  }
+  
+  return days;
+};
+
 const yearlyData = [
   { 
     year: 2022, 
@@ -14,18 +51,18 @@ const yearlyData = [
     sales: 496000, 
     growth: 0,
     months: [
-      { name: 'Jan', sales: 38000, orders: 480 },
-      { name: 'Feb', sales: 35000, orders: 440 },
-      { name: 'Mar', sales: 42000, orders: 530 },
-      { name: 'Apr', sales: 40000, orders: 500 },
-      { name: 'May', sales: 43000, orders: 540 },
-      { name: 'Jun', sales: 45000, orders: 560 },
-      { name: 'Jul', sales: 48000, orders: 600 },
-      { name: 'Aug', sales: 46000, orders: 575 },
-      { name: 'Sep', sales: 44000, orders: 550 },
-      { name: 'Oct', sales: 42000, orders: 525 },
-      { name: 'Nov', sales: 38000, orders: 475 },
-      { name: 'Dec', sales: 35000, orders: 425 },
+      { name: 'Jan', monthIndex: 0, sales: 38000, orders: 480 },
+      { name: 'Feb', monthIndex: 1, sales: 35000, orders: 440 },
+      { name: 'Mar', monthIndex: 2, sales: 42000, orders: 530 },
+      { name: 'Apr', monthIndex: 3, sales: 40000, orders: 500 },
+      { name: 'May', monthIndex: 4, sales: 43000, orders: 540 },
+      { name: 'Jun', monthIndex: 5, sales: 45000, orders: 560 },
+      { name: 'Jul', monthIndex: 6, sales: 48000, orders: 600 },
+      { name: 'Aug', monthIndex: 7, sales: 46000, orders: 575 },
+      { name: 'Sep', monthIndex: 8, sales: 44000, orders: 550 },
+      { name: 'Oct', monthIndex: 9, sales: 42000, orders: 525 },
+      { name: 'Nov', monthIndex: 10, sales: 38000, orders: 475 },
+      { name: 'Dec', monthIndex: 11, sales: 35000, orders: 425 },
     ]
   },
   { 
@@ -34,18 +71,18 @@ const yearlyData = [
     sales: 568000, 
     growth: 14.5,
     months: [
-      { name: 'Jan', sales: 42000, orders: 525 },
-      { name: 'Feb', sales: 38000, orders: 475 },
-      { name: 'Mar', sales: 48000, orders: 600 },
-      { name: 'Apr', sales: 46000, orders: 575 },
-      { name: 'May', sales: 50000, orders: 625 },
-      { name: 'Jun', sales: 52000, orders: 650 },
-      { name: 'Jul', sales: 55000, orders: 690 },
-      { name: 'Aug', sales: 53000, orders: 665 },
-      { name: 'Sep', sales: 50000, orders: 625 },
-      { name: 'Oct', sales: 48000, orders: 600 },
-      { name: 'Nov', sales: 44000, orders: 550 },
-      { name: 'Dec', sales: 42000, orders: 520 },
+      { name: 'Jan', monthIndex: 0, sales: 42000, orders: 525 },
+      { name: 'Feb', monthIndex: 1, sales: 38000, orders: 475 },
+      { name: 'Mar', monthIndex: 2, sales: 48000, orders: 600 },
+      { name: 'Apr', monthIndex: 3, sales: 46000, orders: 575 },
+      { name: 'May', monthIndex: 4, sales: 50000, orders: 625 },
+      { name: 'Jun', monthIndex: 5, sales: 52000, orders: 650 },
+      { name: 'Jul', monthIndex: 6, sales: 55000, orders: 690 },
+      { name: 'Aug', monthIndex: 7, sales: 53000, orders: 665 },
+      { name: 'Sep', monthIndex: 8, sales: 50000, orders: 625 },
+      { name: 'Oct', monthIndex: 9, sales: 48000, orders: 600 },
+      { name: 'Nov', monthIndex: 10, sales: 44000, orders: 550 },
+      { name: 'Dec', monthIndex: 11, sales: 42000, orders: 520 },
     ]
   },
   { 
@@ -54,18 +91,18 @@ const yearlyData = [
     sales: 584600, 
     growth: 2.9,
     months: [
-      { name: 'Jan', sales: 45200, orders: 580 },
-      { name: 'Feb', sales: 41800, orders: 520 },
-      { name: 'Mar', sales: 48600, orders: 610 },
-      { name: 'Apr', sales: 47200, orders: 590 },
-      { name: 'May', sales: 51200, orders: 640 },
-      { name: 'Jun', sales: 54400, orders: 680 },
-      { name: 'Jul', sales: 57600, orders: 720 },
-      { name: 'Aug', sales: 55200, orders: 690 },
-      { name: 'Sep', sales: 52000, orders: 650 },
-      { name: 'Oct', sales: 48200, orders: 612 },
-      { name: 'Nov', sales: 42600, orders: 532 },
-      { name: 'Dec', sales: 40600, orders: 410 },
+      { name: 'Jan', monthIndex: 0, sales: 45200, orders: 580 },
+      { name: 'Feb', monthIndex: 1, sales: 41800, orders: 520 },
+      { name: 'Mar', monthIndex: 2, sales: 48600, orders: 610 },
+      { name: 'Apr', monthIndex: 3, sales: 47200, orders: 590 },
+      { name: 'May', monthIndex: 4, sales: 51200, orders: 640 },
+      { name: 'Jun', monthIndex: 5, sales: 54400, orders: 680 },
+      { name: 'Jul', monthIndex: 6, sales: 57600, orders: 720 },
+      { name: 'Aug', monthIndex: 7, sales: 55200, orders: 690 },
+      { name: 'Sep', monthIndex: 8, sales: 52000, orders: 650 },
+      { name: 'Oct', monthIndex: 9, sales: 48200, orders: 612 },
+      { name: 'Nov', monthIndex: 10, sales: 42600, orders: 532 },
+      { name: 'Dec', monthIndex: 11, sales: 40600, orders: 410 },
     ]
   },
 ];
@@ -130,11 +167,118 @@ interface YearData {
   orders: number;
   sales: number;
   growth: number;
-  months: { name: string; sales: number; orders: number }[];
+  months: { name: string; monthIndex: number; sales: number; orders: number }[];
 }
+
+// Day detail component showing item-wise sales
+const DayDetailCard = ({ day, year }: { day: { day: number; itemSales: Record<string, number>; totalItems: number; totalRevenue: number; orders: number }; year: number }) => {
+  return (
+    <div className="p-2 bg-muted/50 rounded border border-border/50">
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs font-bold text-foreground">Day {day.day}</p>
+        <p className="text-xs text-muted-foreground">{day.orders} orders • ₹{day.totalRevenue.toLocaleString()}</p>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-1.5">
+        {menuItems.map((item) => {
+          const qty = day.itemSales[item.name] || 0;
+          return (
+            <div key={item.id} className="flex items-center justify-between text-[10px] p-1 bg-background rounded">
+              <span className="truncate text-foreground">{item.name}</span>
+              <span className="font-semibold text-primary ml-1">{qty}</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+// Month detail component with day-wise breakdown
+const MonthDetailCard = ({ month, year, isExpanded, onToggle }: { 
+  month: { name: string; monthIndex: number; sales: number; orders: number }; 
+  year: number;
+  isExpanded: boolean;
+  onToggle: () => void;
+}) => {
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
+  const days = generateMonthDays(year, month.monthIndex);
+  
+  const sortedMonths = yearlyData.find(y => y.year === year)?.months || [];
+  const sortedByRevenue = [...sortedMonths].sort((a, b) => b.sales - a.sales);
+  const isBest = sortedByRevenue[0]?.name === month.name;
+  const isWorst = sortedByRevenue[sortedByRevenue.length - 1]?.name === month.name;
+  const avgPerOrder = month.orders > 0 ? Math.round(month.sales / month.orders) : 0;
+  
+  return (
+    <div className={cn(
+      "border border-border/50 rounded overflow-hidden",
+      isBest && "bg-green-500/5",
+      isWorst && "bg-red-500/5"
+    )}>
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center justify-between p-2 hover:bg-muted/30 transition-colors"
+      >
+        <span className="flex items-center gap-1.5 text-xs font-medium text-foreground">
+          {month.name}
+          {isBest && <span className="text-[10px]">🏆</span>}
+        </span>
+        <div className="flex items-center gap-3">
+          <div className="text-right">
+            <p className="text-xs font-semibold text-foreground">₹{(month.sales / 1000).toFixed(1)}K</p>
+            <p className="text-[9px] text-muted-foreground">{month.orders} orders</p>
+          </div>
+          {isExpanded ? (
+            <ChevronUp className="w-3 h-3 text-muted-foreground" />
+          ) : (
+            <ChevronDown className="w-3 h-3 text-muted-foreground" />
+          )}
+        </div>
+      </button>
+      
+      {isExpanded && (
+        <div className="p-2 border-t border-border/50 space-y-2">
+          {/* Summary */}
+          <div className="flex gap-2 text-[10px] text-muted-foreground">
+            <span>Avg/Order: <span className="font-semibold text-foreground">₹{avgPerOrder}</span></span>
+            <span>•</span>
+            <span>Days: <span className="font-semibold text-foreground">{days.length}</span></span>
+          </div>
+          
+          {/* Day Grid */}
+          <div className="grid grid-cols-7 gap-1">
+            {days.map((day) => (
+              <button
+                key={day.day}
+                onClick={() => setSelectedDay(selectedDay === day.day ? null : day.day)}
+                className={cn(
+                  "p-1.5 text-center rounded text-[10px] transition-colors",
+                  selectedDay === day.day 
+                    ? "bg-primary text-primary-foreground" 
+                    : "bg-muted/50 hover:bg-muted text-foreground"
+                )}
+              >
+                {day.day}
+              </button>
+            ))}
+          </div>
+          
+          {/* Selected Day Details */}
+          {selectedDay && (
+            <DayDetailCard 
+              day={days.find(d => d.day === selectedDay)!} 
+              year={year} 
+            />
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const YearlyReportCard = ({ yearData }: { yearData: YearData }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [expandedMonth, setExpandedMonth] = useState<string | null>(null);
   
   // Find best and worst months
   const sortedMonths = [...yearData.months].sort((a, b) => b.sales - a.sales);
@@ -187,65 +331,18 @@ const YearlyReportCard = ({ yearData }: { yearData: YearData }) => {
             </div>
           </div>
           
-          {/* Month-wise Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="text-muted-foreground border-b border-border">
-                  <th className="pb-1.5 text-left font-medium">Month</th>
-                  <th className="pb-1.5 text-right font-medium">Sales</th>
-                  <th className="pb-1.5 text-right font-medium">Orders</th>
-                  <th className="pb-1.5 text-right font-medium">Avg/Order</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/50">
-                {yearData.months.map((month, index) => {
-                  const avgPerOrder = month.orders > 0 ? Math.round(month.sales / month.orders) : 0;
-                  const isBest = month.name === bestMonth.name;
-                  const isWorst = month.name === worstMonth.name;
-                  
-                  return (
-                    <tr 
-                      key={index}
-                      className={cn(
-                        isBest && "bg-green-500/5",
-                        isWorst && "bg-red-500/5"
-                      )}
-                    >
-                      <td className="py-1.5 font-medium text-foreground">
-                        <span className="flex items-center gap-1">
-                          {month.name}
-                          {isBest && <span className="text-[10px]">🏆</span>}
-                        </span>
-                      </td>
-                      <td className="py-1.5 text-right font-semibold text-foreground">
-                        ₹{(month.sales / 1000).toFixed(1)}K
-                      </td>
-                      <td className="py-1.5 text-right text-muted-foreground">
-                        {month.orders}
-                      </td>
-                      <td className="py-1.5 text-right text-muted-foreground">
-                        ₹{avgPerOrder}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-              <tfoot>
-                <tr className="border-t border-border bg-muted/30">
-                  <td className="py-1.5 font-bold text-foreground">Total</td>
-                  <td className="py-1.5 text-right font-bold text-foreground">
-                    ₹{(yearData.sales / 100000).toFixed(1)}L
-                  </td>
-                  <td className="py-1.5 text-right font-bold text-foreground">
-                    {yearData.orders.toLocaleString()}
-                  </td>
-                  <td className="py-1.5 text-right font-bold text-foreground">
-                    ₹{Math.round(yearData.sales / yearData.orders)}
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
+          {/* Month-wise Expandable Cards */}
+          <p className="text-[10px] text-muted-foreground mb-2">Click on a month to see day-wise breakdown:</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {yearData.months.map((month) => (
+              <MonthDetailCard
+                key={month.name}
+                month={month}
+                year={yearData.year}
+                isExpanded={expandedMonth === month.name}
+                onToggle={() => setExpandedMonth(expandedMonth === month.name ? null : month.name)}
+              />
+            ))}
           </div>
         </div>
       )}
