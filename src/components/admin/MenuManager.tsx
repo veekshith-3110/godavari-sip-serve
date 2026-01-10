@@ -142,8 +142,8 @@ const EditItemModal = ({ item, categories, onClose, onSave }: EditItemModalProps
   };
 
   const handleSubmit = () => {
-    if (formData.name && formData.price !== undefined && formData.price > 0 && formData.category && formData.image) {
-      onSave(formData as MenuItem);
+    if (formData.name && formData.price !== undefined && formData.price > 0 && formData.category) {
+      onSave({ ...formData, image: formData.image || '/placeholder.svg' } as MenuItem);
     }
   };
 
