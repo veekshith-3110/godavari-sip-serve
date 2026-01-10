@@ -39,21 +39,22 @@ const MenuManager = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 lg:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-foreground">Menu Manager</h2>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-xl lg:text-2xl font-bold text-foreground">Menu Manager</h2>
         <button
           onClick={handleAddNew}
-          className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl font-semibold hover:opacity-90 transition-opacity"
+          className="flex items-center gap-2 px-3 lg:px-4 py-2 bg-primary text-primary-foreground rounded-xl font-semibold hover:opacity-90 transition-opacity text-sm lg:text-base"
         >
-          <Plus className="w-5 h-5" />
-          Add Item
+          <Plus className="w-4 h-4 lg:w-5 lg:h-5" />
+          <span className="hidden sm:inline">Add Item</span>
+          <span className="sm:hidden">Add</span>
         </button>
       </div>
 
       {/* Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 lg:gap-4">
         {items.map((item) => (
           <div
             key={item.id}
@@ -61,37 +62,33 @@ const MenuManager = () => {
               !item.available ? 'opacity-60' : ''
             }`}
           >
-            <div className="h-32 overflow-hidden">
+            <div className="h-24 lg:h-32 overflow-hidden">
               <img
                 src={item.image}
                 alt={item.name}
                 className="w-full h-full object-cover"
               />
             </div>
-            <div className="p-4">
+            <div className="p-3 lg:p-4">
               <div className="flex items-start justify-between mb-2">
-                <div>
-                  <h3 className="font-bold text-foreground">{item.name}</h3>
-                  <p className="text-lg font-extrabold text-primary">₹{item.price}</p>
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-bold text-sm lg:text-base text-foreground truncate">{item.name}</h3>
+                  <p className="text-base lg:text-lg font-extrabold text-primary">₹{item.price}</p>
                 </div>
                 <button
                   onClick={() => handleEdit(item)}
-                  className="p-2 rounded-lg bg-muted hover:bg-secondary transition-colors"
+                  className="p-1.5 lg:p-2 rounded-lg bg-muted hover:bg-secondary transition-colors flex-shrink-0"
                 >
-                  <Edit2 className="w-4 h-4 text-muted-foreground" />
+                  <Edit2 className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-muted-foreground" />
                 </button>
               </div>
-              <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
-                <span className="text-sm text-muted-foreground capitalize">{item.category}</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">
-                    {item.available ? 'Available' : 'Sold Out'}
-                  </span>
-                  <Switch
-                    checked={item.available}
-                    onCheckedChange={() => toggleAvailability(item.id)}
-                  />
-                </div>
+              <div className="flex items-center justify-between mt-2 lg:mt-3 pt-2 lg:pt-3 border-t border-border">
+                <span className="text-xs lg:text-sm text-muted-foreground capitalize">{item.category}</span>
+                <Switch
+                  checked={item.available}
+                  onCheckedChange={() => toggleAvailability(item.id)}
+                  className="scale-90 lg:scale-100"
+                />
               </div>
             </div>
           </div>
