@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { mockOrders, menuItems } from '@/data/mockData';
-import { Calendar as CalendarIcon, CalendarDays, CalendarRange, TrendingUp, TrendingDown, Minus } from 'lucide-react';
-import { format, isSameDay, startOfWeek, addDays, subWeeks } from 'date-fns';
+import { mockOrders, menuItems, Category } from '@/data/mockData';
+import { Calendar as CalendarIcon, CalendarDays, CalendarRange, TrendingUp, TrendingDown, Minus, Coffee, UtensilsCrossed, Droplets, Flame } from 'lucide-react';
+import { format, isSameDay, startOfWeek, addDays, subWeeks, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
@@ -105,8 +105,77 @@ const getWeeklyReport = () => {
   return { days, totalSales, totalOrders, weeklyGrowth, weekStart };
 };
 
+// Generate monthly item-wise sales report
+const getMonthlyItemReport = (month: Date) => {
+  const monthStart = startOfMonth(month);
+  const monthEnd = endOfMonth(month);
+  const today = new Date();
+  const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd > today ? today : monthEnd });
+  
+  // Item-wise totals
+  const itemTotals: Record<string, { name: string; category: Category; quantity: number; revenue: number }> = {};
+  
+  // Category-wise totals
+  const categoryTotals: Record<Category, { quantity: number; revenue: number }> = {
+    hot: { quantity: 0, revenue: 0 },
+    snacks: { quantity: 0, revenue: 0 },
+    cold: { quantity: 0, revenue: 0 },
+    smoke: { quantity: 0, revenue: 0 },
+  };
+  
+  // Initialize all menu items
+  menuItems.forEach(item => {
+    itemTotals[item.id] = { name: item.name, category: item.category, quantity: 0, revenue: 0 };
+  });
+  
+  // Generate sales for each day
+  daysInMonth.forEach(date => {
+    const seed = date.getDate() + date.getMonth() * 31;
+    
+    // Generate item sales for this day
+    menuItems.forEach((item, index) => {
+      const itemSeed = seed + index * 7;
+      const quantity = Math.floor((itemSeed % 15) + 2); // 2-16 items per day
+      
+      itemTotals[item.id].quantity += quantity;
+      itemTotals[item.id].revenue += quantity * item.price;
+      
+      categoryTotals[item.category].quantity += quantity;
+      categoryTotals[item.category].revenue += quantity * item.price;
+    });
+  });
+  
+  // Convert to array and sort by quantity
+  const itemsArray = Object.values(itemTotals).sort((a, b) => b.quantity - a.quantity);
+  
+  return { itemTotals: itemsArray, categoryTotals, daysCount: daysInMonth.length };
+};
+
+// Get item sales for a specific date
+const getItemSalesForDate = (date: Date) => {
+  const seed = date.getDate() + date.getMonth() * 31;
+  
+  return menuItems.map((item, index) => {
+    const itemSeed = seed + index * 7;
+    const quantity = Math.floor((itemSeed % 15) + 2);
+    return {
+      ...item,
+      quantity,
+      revenue: quantity * item.price,
+    };
+  }).sort((a, b) => b.quantity - a.quantity);
+};
+
+const categoryConfig: Record<Category, { label: string; icon: React.ReactNode; color: string }> = {
+  hot: { label: 'Hot Drinks', icon: <Coffee className="w-4 h-4" />, color: 'text-orange-500 bg-orange-500/10' },
+  snacks: { label: 'Snacks', icon: <UtensilsCrossed className="w-4 h-4" />, color: 'text-yellow-600 bg-yellow-500/10' },
+  cold: { label: 'Cold Drinks', icon: <Droplets className="w-4 h-4" />, color: 'text-blue-500 bg-blue-500/10' },
+  smoke: { label: 'Smoke', icon: <Flame className="w-4 h-4" />, color: 'text-gray-500 bg-gray-500/10' },
+};
+
 const SalesReports = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
   
   const ordersForDate = generateMockOrdersForDate(selectedDate);
   const todaySales = ordersForDate.reduce((sum, order) => sum + order.total, 0);
@@ -116,6 +185,8 @@ const SalesReports = () => {
   const dateLabel = isToday ? 'Today' : format(selectedDate, 'dd MMM');
   
   const weeklyReport = getWeeklyReport();
+  const monthlyItemReport = getMonthlyItemReport(selectedMonth);
+  const dateItemSales = getItemSalesForDate(selectedDate);
 
   return (
     <div className="space-y-2 md:space-y-3">
@@ -308,58 +379,140 @@ const SalesReports = () => {
         </div>
       </div>
 
-      {/* Monthly & Yearly Reports - Compact Tables */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-        {/* Monthly */}
-        <div className="stat-card p-2 md:p-3">
-          <h3 className="text-xs md:text-sm font-bold text-foreground mb-2">Monthly (2024)</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="text-muted-foreground border-b border-border">
-                  <th className="pb-1 text-left font-medium">Mon</th>
-                  <th className="pb-1 text-right font-medium">Orders</th>
-                  <th className="pb-1 text-right font-medium">Sales</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/50">
-                {monthlyData.slice(0, 6).map((month) => (
-                  <tr key={month.name}>
-                    <td className="py-1 font-medium text-foreground">{month.name}</td>
-                    <td className="py-1 text-right text-muted-foreground">{month.orders}</td>
-                    <td className="py-1 text-right font-semibold text-foreground">₹{(month.sales / 1000).toFixed(1)}K</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+      {/* Monthly Item-wise Report - NEW */}
+      <div className="stat-card p-2 md:p-3">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-xs md:text-sm font-bold text-foreground">
+            Monthly Item Report - {format(selectedMonth, 'MMMM yyyy')}
+          </h3>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="h-7 text-[10px] px-2">
+                <CalendarIcon className="mr-1 h-3 w-3" />
+                {format(selectedMonth, 'MMM yyyy')}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <Calendar
+                mode="single"
+                selected={selectedMonth}
+                onSelect={(date) => date && setSelectedMonth(date)}
+                disabled={(date) => date > new Date()}
+                initialFocus
+                className={cn("p-2 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
         </div>
-
-        {/* Yearly */}
-        <div className="stat-card p-2 md:p-3">
-          <h3 className="text-xs md:text-sm font-bold text-foreground mb-2">Yearly</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="text-muted-foreground border-b border-border">
-                  <th className="pb-1 text-left font-medium">Year</th>
-                  <th className="pb-1 text-right font-medium">Sales</th>
-                  <th className="pb-1 text-right font-medium">Growth</th>
+        
+        {/* Category Summary Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+          {(Object.keys(monthlyItemReport.categoryTotals) as Category[]).map((cat) => {
+            const config = categoryConfig[cat];
+            const data = monthlyItemReport.categoryTotals[cat];
+            return (
+              <div key={cat} className={cn("p-2 rounded-lg", config.color.split(' ')[1])}>
+                <div className="flex items-center gap-1.5 mb-1">
+                  <span className={config.color.split(' ')[0]}>{config.icon}</span>
+                  <span className="text-[10px] font-medium text-foreground">{config.label}</span>
+                </div>
+                <p className="text-sm font-bold text-foreground">{data.quantity} items</p>
+                <p className="text-[10px] text-muted-foreground">₹{data.revenue.toLocaleString()}</p>
+              </div>
+            );
+          })}
+        </div>
+        
+        {/* Item-wise Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="text-muted-foreground border-b border-border">
+                <th className="pb-1.5 text-left font-medium">Item</th>
+                <th className="pb-1.5 text-left font-medium">Category</th>
+                <th className="pb-1.5 text-right font-medium">Qty Sold</th>
+                <th className="pb-1.5 text-right font-medium">Revenue</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border/50">
+              {monthlyItemReport.itemTotals.map((item, index) => (
+                <tr key={index} className={index < 3 ? 'bg-green-500/5' : ''}>
+                  <td className="py-1.5 font-medium text-foreground">
+                    <span className="flex items-center gap-1">
+                      {index < 3 && <span className="text-[10px]">🏆</span>}
+                      {item.name}
+                    </span>
+                  </td>
+                  <td className="py-1.5">
+                    <span className={cn(
+                      "text-[10px] px-1.5 py-0.5 rounded-full",
+                      categoryConfig[item.category].color
+                    )}>
+                      {categoryConfig[item.category].label}
+                    </span>
+                  </td>
+                  <td className="py-1.5 text-right font-semibold text-foreground">{item.quantity}</td>
+                  <td className="py-1.5 text-right text-muted-foreground">₹{item.revenue.toLocaleString()}</td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-border/50">
-                {yearlyData.map((year) => (
-                  <tr key={year.year}>
-                    <td className="py-1 font-medium text-foreground">{year.year}</td>
-                    <td className="py-1 text-right font-semibold text-foreground">₹{(year.sales / 100000).toFixed(1)}L</td>
-                    <td className={`py-1 text-right font-medium ${year.growth >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                      {year.growth >= 0 ? '+' : ''}{year.growth}%
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Date-wise Item Sales */}
+      <div className="stat-card p-2 md:p-3">
+        <h3 className="text-xs md:text-sm font-bold text-foreground mb-2">
+          Item Sales - {format(selectedDate, 'dd MMMM yyyy, EEEE')}
+        </h3>
+        <p className="text-[10px] text-muted-foreground mb-2">Select a date above to see item-wise breakdown</p>
+        
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="text-muted-foreground border-b border-border">
+                <th className="pb-1.5 text-left font-medium">Item</th>
+                <th className="pb-1.5 text-right font-medium">Qty</th>
+                <th className="pb-1.5 text-right font-medium">Revenue</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border/50">
+              {dateItemSales.slice(0, 8).map((item, index) => (
+                <tr key={index}>
+                  <td className="py-1 font-medium text-foreground">{item.name}</td>
+                  <td className="py-1 text-right font-semibold text-foreground">{item.quantity}</td>
+                  <td className="py-1 text-right text-muted-foreground">₹{item.revenue}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Yearly Reports */}
+      <div className="stat-card p-2 md:p-3">
+        <h3 className="text-xs md:text-sm font-bold text-foreground mb-2">Yearly Summary</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="text-muted-foreground border-b border-border">
+                <th className="pb-1 text-left font-medium">Year</th>
+                <th className="pb-1 text-right font-medium">Sales</th>
+                <th className="pb-1 text-right font-medium">Growth</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border/50">
+              {yearlyData.map((year) => (
+                <tr key={year.year}>
+                  <td className="py-1 font-medium text-foreground">{year.year}</td>
+                  <td className="py-1 text-right font-semibold text-foreground">₹{(year.sales / 100000).toFixed(1)}L</td>
+                  <td className={`py-1 text-right font-medium ${year.growth >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                    {year.growth >= 0 ? '+' : ''}{year.growth}%
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
