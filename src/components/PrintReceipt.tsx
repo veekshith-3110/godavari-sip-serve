@@ -14,45 +14,43 @@ const PrintReceipt = forwardRef<HTMLDivElement, PrintReceiptProps>(
     const time = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
 
     return (
-      <div ref={ref} className="print-receipt hidden print:block p-4 font-mono text-sm w-[280px] mx-auto">
+      <div ref={ref} className="print-receipt hidden">
         {/* Header */}
-        <div className="text-center">
-          <h1 className="text-xl font-bold">GODAVARI CAFE</h1>
-          <p className="text-xs mt-1">{date} | {time}</p>
+        <div className="receipt-header">
+          <div className="receipt-title">GODAVARI CAFE</div>
+          <div className="receipt-date">{date} | {time}</div>
         </div>
 
         {/* Divider */}
-        <p className="text-center my-3">------------------------</p>
+        <div className="receipt-divider">------------------------</div>
 
         {/* Token Number */}
-        <div className="text-center my-4">
-          <p className="text-sm font-medium">TOKEN</p>
-          <p className="text-5xl font-extrabold">#{tokenNumber}</p>
+        <div className="receipt-token">
+          <div className="receipt-token-label">TOKEN</div>
+          <div className="receipt-token-number">#{tokenNumber}</div>
         </div>
 
         {/* Divider */}
-        <p className="text-center my-3">------------------------</p>
+        <div className="receipt-divider">------------------------</div>
 
         {/* Items */}
-        <div className="space-y-2 px-1">
+        <div className="receipt-items">
           {items.map((item) => (
-            <div key={item.id} className="flex justify-between items-center gap-2">
-              <span className="text-base font-medium break-words flex-1 leading-tight">{item.name}</span>
-              <span className="text-base font-bold whitespace-nowrap">x{item.quantity}</span>
+            <div key={item.id} className="receipt-item">
+              <span className="receipt-item-name">{item.name}</span>
+              <span className="receipt-item-qty">x{item.quantity}</span>
             </div>
           ))}
         </div>
 
         {/* Divider */}
-        <p className="text-center my-3">------------------------</p>
+        <div className="receipt-divider">------------------------</div>
 
         {/* Total */}
-        <div className="text-center font-bold text-lg">
-          Total: ₹{total}
-        </div>
+        <div className="receipt-total">Total: ₹{total}</div>
 
         {/* Footer */}
-        <p className="text-center mt-4 text-xs">Thank You! Visit Again.</p>
+        <div className="receipt-footer">Thank You! Visit Again.</div>
       </div>
     );
   }
