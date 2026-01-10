@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Lock, Eye, EyeOff } from 'lucide-react';
 
 // Change this PIN to your desired code
-const APP_PIN = '1234';
+const APP_PIN = '799313';
 const STORAGE_KEY = 'pos_unlocked';
 
 interface PinProtectionProps {
