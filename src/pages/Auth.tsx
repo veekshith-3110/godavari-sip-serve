@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { Lock, Mail, Eye, EyeOff, LogIn, UserPlus } from 'lucide-react';
+import { Mail, Eye, EyeOff, LogIn, UserPlus, KeyRound } from 'lucide-react';
+import godavariLogo from '@/assets/godavari-cafe-logo.png';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -120,12 +121,10 @@ const Auth = () => {
       <div className="w-full max-w-sm">
         <div className="bg-card rounded-2xl shadow-xl p-8 border">
           <div className="flex justify-center mb-6">
-            <div className="p-4 bg-primary/10 rounded-full">
-              <Lock className="h-8 w-8 text-primary" />
-            </div>
+            <img src={godavariLogo} alt="Godavari Cafe" className="h-24 w-24 object-contain" />
           </div>
           
-          <h1 className="text-2xl font-bold text-center mb-2">POS System</h1>
+          <h1 className="text-2xl font-bold text-center mb-2">GODAVARI CAFE</h1>
           <p className="text-muted-foreground text-center mb-6">
             {isSignUp ? 'Create your account' : 'Sign in to continue'}
           </p>
@@ -144,7 +143,7 @@ const Auth = () => {
             </div>
             
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
