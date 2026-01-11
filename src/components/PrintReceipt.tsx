@@ -53,11 +53,19 @@ const PrintReceipt = forwardRef<HTMLDivElement, PrintReceiptProps>(
           </div>
         </div>
 
-        {/* Divider */}
-        <div style={{ textAlign: 'center', margin: '2mm 0', fontSize: '10px' }}>----------------------</div>
+        {/* Divider - Items Section Start */}
+        <div style={{ 
+          borderTop: '1px dashed #000', 
+          margin: '2mm 0',
+          width: '100%',
+        }} />
 
-        {/* Items */}
-        <div style={{ margin: '2mm 0' }}>
+        {/* Items - Full width aligned with dividers */}
+        <div style={{ 
+          margin: '0',
+          padding: '2mm 0',
+          width: '100%',
+        }}>
           {items.map((item) => (
             <div 
               key={item.id} 
@@ -69,7 +77,6 @@ const PrintReceipt = forwardRef<HTMLDivElement, PrintReceiptProps>(
                 fontSize: '12px',
                 width: '100%',
                 boxSizing: 'border-box',
-                gap: '2mm',
               }}
             >
               <span style={{ 
@@ -78,16 +85,21 @@ const PrintReceipt = forwardRef<HTMLDivElement, PrintReceiptProps>(
                 overflowWrap: 'break-word',
                 fontWeight: 500,
                 minWidth: 0,
+                textAlign: 'left',
               }}>
                 {item.name}
               </span>
-              <span style={{ fontWeight: 'bold', whiteSpace: 'nowrap', flexShrink: 0 }}>x{item.quantity}</span>
+              <span style={{ fontWeight: 'bold', whiteSpace: 'nowrap', flexShrink: 0, textAlign: 'right' }}>x{item.quantity}</span>
             </div>
           ))}
         </div>
 
-        {/* Divider */}
-        <div style={{ textAlign: 'center', margin: '2mm 0', fontSize: '10px' }}>----------------------</div>
+        {/* Divider - Items Section End */}
+        <div style={{ 
+          borderTop: '1px dashed #000', 
+          margin: '2mm 0',
+          width: '100%',
+        }} />
 
         {/* Total */}
         <div style={{ textAlign: 'center', fontSize: '14px', fontWeight: 'bold', margin: '2mm 0' }}>
