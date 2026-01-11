@@ -21,6 +21,14 @@ export const useOrders = () => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
+  // Get today's date boundaries in local time
+  const getTodayBoundaries = () => {
+    const now = new Date();
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    return { startOfDay, endOfDay };
+  };
+
   const fetchOrders = async () => {
     try {
       // Fetch orders with their items
@@ -45,7 +53,7 @@ export const useOrders = () => {
             name: item.item_name,
             price: Number(item.item_price),
             quantity: item.quantity,
-            category: 'hot' as const, // Default, not critical for display
+            category: 'hot' as const,
             image: '',
             available: true,
           }));
@@ -61,11 +69,13 @@ export const useOrders = () => {
 
       setOrders(ordersWithItems);
 
-      // Set next token number
-      if (ordersData && ordersData.length > 0) {
-        const maxToken = Math.max(...ordersData.map((o) => o.token_number));
-        setNextTokenNumber(maxToken + 1);
-      }
+      // Calculate next token based on today's order count
+      const { startOfDay } = getTodayBoundaries();
+      const todayOrders = ordersWithItems.filter(
+        (order) => order.createdAt >= startOfDay
+      );
+      const nextToken = (todayOrders.length % 100) + 1;
+      setNextTokenNumber(nextToken);
     } catch (error) {
       console.error('Error fetching orders:', error);
     } finally {
@@ -75,11 +85,25 @@ export const useOrders = () => {
 
   const createOrder = async (items: CartItem[], total: number) => {
     try {
-      // Create order
+      // Get fresh count of today's orders to ensure accuracy
+      const { startOfDay } = getTodayBoundaries();
+      
+      const { count, error: countError } = await supabase
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', startOfDay.toISOString());
+
+      if (countError) throw countError;
+
+      // Calculate token: (today's count % 100) + 1, loops from 1-100
+      const todayCount = count || 0;
+      const tokenNumber = (todayCount % 100) + 1;
+
+      // Create order with calculated token
       const { data: orderData, error: orderError } = await supabase
         .from('orders')
         .insert({
-          token_number: nextTokenNumber,
+          token_number: tokenNumber,
           total,
         })
         .select()
@@ -111,7 +135,10 @@ export const useOrders = () => {
       };
 
       setOrders((prev) => [newOrder, ...prev]);
-      setNextTokenNumber((prev) => prev + 1);
+      
+      // Update next token for display
+      const newNextToken = ((todayCount + 1) % 100) + 1;
+      setNextTokenNumber(newNextToken);
 
       return newOrder;
     } catch (error) {
