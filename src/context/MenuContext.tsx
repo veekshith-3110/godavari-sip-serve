@@ -4,6 +4,7 @@ import { useMenuItems, MenuItem, MenuCategory } from '@/hooks/useMenuItems';
 interface MenuContextType {
   menuItems: MenuItem[];
   loading: boolean;
+  isOffline: boolean;
   addMenuItem: (item: Omit<MenuItem, 'id'>) => Promise<MenuItem | null>;
   updateMenuItem: (item: MenuItem) => Promise<void>;
   toggleAvailability: (itemId: string) => Promise<void>;
@@ -16,6 +17,7 @@ export const MenuProvider = ({ children }: { children: ReactNode }) => {
   const {
     menuItems,
     loading,
+    isOffline,
     addMenuItem,
     updateMenuItem,
     toggleAvailability,
@@ -27,6 +29,7 @@ export const MenuProvider = ({ children }: { children: ReactNode }) => {
       value={{
         menuItems,
         loading,
+        isOffline,
         addMenuItem,
         updateMenuItem,
         toggleAvailability,

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Settings, ShoppingCart, X, Loader2, LogOut } from 'lucide-react';
+import { Settings, ShoppingCart, X, Loader2, LogOut, WifiOff } from 'lucide-react';
 import { useMenu, MenuItem } from '@/context/MenuContext';
 import { useOrders, CartItem } from '@/hooks/useOrders';
 import { useExpenses } from '@/hooks/useExpenses';
@@ -16,7 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 type Category = 'hot' | 'snacks' | 'cold' | 'smoke';
 
 const Index = () => {
-  const { menuItems, loading: menuLoading } = useMenu();
+  const { menuItems, loading: menuLoading, isOffline } = useMenu();
   const { nextTokenNumber, createOrder } = useOrders();
   const { addExpense } = useExpenses();
   const { signOut } = useAuth();
@@ -113,7 +113,15 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       {/* Top Bar */}
       <header className="bg-primary text-primary-foreground px-4 py-3 md:px-6 md:py-4 flex items-center justify-between sticky top-0 z-40">
-        <h1 className="text-base md:text-lg font-bold tracking-wide">GODAVARI CAFE</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-base md:text-lg font-bold tracking-wide">GODAVARI CAFE</h1>
+          {isOffline && (
+            <span className="flex items-center gap-1 text-xs bg-yellow-500/20 text-yellow-200 px-2 py-0.5 rounded-full">
+              <WifiOff className="w-3 h-3" />
+              Offline
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-1 md:gap-2">
           {/* Mobile Cart Button */}
           <button
