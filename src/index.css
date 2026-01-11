@@ -6,83 +6,83 @@
 
 @layer base {
   :root {
-    /* Two-color palette: Warm Brown + Off-White */
-    --background: 30 20% 98%;
-    --foreground: 25 50% 20%;
+    /* Clean Two-Color Palette: Deep Charcoal + Pure White */
+    --background: 0 0% 98%;
+    --foreground: 220 20% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 25 50% 20%;
+    --card-foreground: 220 20% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 25 50% 20%;
+    --popover-foreground: 220 20% 15%;
 
-    /* Primary: Warm Brown */
-    --primary: 25 60% 40%;
+    /* Primary: Deep Charcoal */
+    --primary: 220 20% 20%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary: Light version of primary */
-    --secondary: 25 30% 92%;
-    --secondary-foreground: 25 50% 20%;
+    /* Secondary: Light Gray */
+    --secondary: 220 10% 94%;
+    --secondary-foreground: 220 20% 15%;
 
-    /* Muted: Subtle gray with warm undertone */
-    --muted: 25 15% 94%;
-    --muted-foreground: 25 20% 45%;
+    /* Muted: Soft Gray */
+    --muted: 220 10% 96%;
+    --muted-foreground: 220 10% 45%;
 
-    /* Accent: Same as primary for consistency */
-    --accent: 25 60% 40%;
+    /* Accent: Same as primary */
+    --accent: 220 20% 20%;
     --accent-foreground: 0 0% 100%;
 
-    /* Destructive: Using dark brown instead of red */
-    --destructive: 25 70% 30%;
+    /* Destructive: Dark shade */
+    --destructive: 0 65% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Success: Dark brown (same family) */
-    --success: 25 60% 35%;
+    /* Success: Dark charcoal */
+    --success: 220 20% 20%;
     --success-foreground: 0 0% 100%;
 
-    /* Info: Primary brown */
-    --info: 25 60% 40%;
+    /* Info: Primary */
+    --info: 220 20% 20%;
     --info-foreground: 0 0% 100%;
 
-    --border: 25 20% 88%;
-    --input: 25 20% 88%;
-    --ring: 25 60% 40%;
+    --border: 220 10% 90%;
+    --input: 220 10% 90%;
+    --ring: 220 20% 20%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
 
-    /* Sidebar: Dark brown */
-    --sidebar-background: 25 50% 18%;
-    --sidebar-foreground: 30 20% 95%;
-    --sidebar-primary: 25 60% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 25 40% 25%;
-    --sidebar-accent-foreground: 30 20% 95%;
-    --sidebar-border: 25 40% 25%;
-    --sidebar-ring: 25 60% 50%;
+    /* Sidebar: Dark */
+    --sidebar-background: 220 20% 12%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 220 20% 12%;
+    --sidebar-accent: 220 15% 20%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 220 15% 20%;
+    --sidebar-ring: 0 0% 100%;
   }
 
   .dark {
-    --background: 25 40% 10%;
-    --foreground: 30 20% 95%;
-    --card: 25 35% 14%;
-    --card-foreground: 30 20% 95%;
-    --popover: 25 35% 14%;
-    --popover-foreground: 30 20% 95%;
-    --primary: 25 60% 50%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 25 30% 20%;
-    --secondary-foreground: 30 20% 95%;
-    --muted: 25 25% 18%;
-    --muted-foreground: 30 15% 60%;
-    --accent: 25 60% 50%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 25 60% 35%;
+    --background: 220 20% 8%;
+    --foreground: 0 0% 95%;
+    --card: 220 20% 12%;
+    --card-foreground: 0 0% 95%;
+    --popover: 220 20% 12%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 0 0% 100%;
+    --primary-foreground: 220 20% 12%;
+    --secondary: 220 15% 18%;
+    --secondary-foreground: 0 0% 95%;
+    --muted: 220 15% 15%;
+    --muted-foreground: 220 10% 55%;
+    --accent: 0 0% 100%;
+    --accent-foreground: 220 20% 12%;
+    --destructive: 0 60% 45%;
     --destructive-foreground: 0 0% 100%;
-    --success: 25 55% 45%;
-    --success-foreground: 0 0% 100%;
-    --border: 25 30% 22%;
-    --input: 25 30% 22%;
-    --ring: 25 60% 50%;
+    --success: 0 0% 90%;
+    --success-foreground: 220 20% 12%;
+    --border: 220 15% 20%;
+    --input: 220 15% 20%;
+    --ring: 0 0% 100%;
   }
 }
 
@@ -94,63 +94,57 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Inter', sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Hide scrollbar for category tabs */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }
 
 @layer components {
   .product-card {
-    @apply bg-card rounded-xl shadow-md hover:shadow-xl transition-all duration-200 cursor-pointer overflow-hidden;
-    @apply active:scale-95 active:shadow-sm;
-  }
-
-  .product-card:active {
-    animation: tap-pulse 0.15s ease-out;
+    @apply bg-card rounded-2xl shadow-sm border border-border overflow-hidden;
+    @apply transition-all duration-150 cursor-pointer;
+    @apply active:scale-[0.97] active:shadow-none;
   }
 
   .cart-item {
-    @apply flex items-center justify-between py-3 px-4 bg-muted/50 rounded-lg;
+    @apply flex items-center justify-between py-3 px-4 bg-secondary/50 rounded-xl;
   }
 
   .category-tab {
-    @apply px-6 py-4 rounded-xl font-semibold transition-all duration-200;
+    @apply px-5 py-3 rounded-full font-semibold transition-all duration-200;
     @apply hover:bg-secondary;
   }
 
   .category-tab.active {
-    @apply bg-primary text-primary-foreground shadow-lg;
+    @apply bg-primary text-primary-foreground shadow-md;
   }
 
   .btn-print {
-    @apply w-full py-6 text-2xl font-bold rounded-xl;
+    @apply w-full py-5 text-xl font-bold rounded-2xl;
     @apply bg-primary text-primary-foreground shadow-lg;
-    @apply hover:opacity-90 active:scale-95 transition-all;
+    @apply hover:opacity-90 active:scale-[0.98] transition-all;
   }
 
   .btn-expense {
-    @apply w-full py-4 text-lg font-bold rounded-xl;
-    @apply bg-foreground text-background;
-    @apply hover:opacity-90 active:scale-95 transition-all;
+    @apply w-full py-3.5 text-base font-semibold rounded-xl;
+    @apply bg-secondary text-foreground border border-border;
+    @apply hover:bg-muted active:scale-[0.98] transition-all;
   }
 
   .stat-card {
-    @apply bg-card p-6 rounded-2xl shadow-sm border border-border;
+    @apply bg-card p-5 rounded-2xl shadow-sm border border-border;
   }
 
   .admin-sidebar {
     @apply bg-sidebar text-sidebar-foreground min-h-screen;
-  }
-}
-
-
-@keyframes tap-pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(0.95);
-  }
-  100% {
-    transform: scale(1);
   }
 }
 

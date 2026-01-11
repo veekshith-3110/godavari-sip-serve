@@ -19,8 +19,8 @@ const ProductCard = ({ item, onAdd }: ProductCardProps) => {
         !item.available ? 'opacity-50 cursor-not-allowed' : ''
       }`}
     >
-      {/* Image Section - 80% */}
-      <div className="relative aspect-square overflow-hidden">
+      {/* Image Section */}
+      <div className="relative aspect-square overflow-hidden bg-secondary">
         <img
           src={item.image}
           alt={item.name}
@@ -28,20 +28,20 @@ const ProductCard = ({ item, onAdd }: ProductCardProps) => {
           loading="lazy"
         />
         {!item.available && (
-          <div className="absolute inset-0 bg-foreground/60 flex items-center justify-center">
-            <span className="text-background font-bold text-sm md:text-lg rotate-[-15deg]">
+          <div className="absolute inset-0 bg-foreground/70 flex items-center justify-center">
+            <span className="text-background font-bold text-xs md:text-sm rotate-[-12deg]">
               SOLD OUT
             </span>
           </div>
         )}
       </div>
       
-      {/* Info Section - 20% */}
-      <div className="p-2 md:p-3 bg-card border-t border-border">
-        <h3 className="font-bold text-sm md:text-base lg:text-lg truncate text-foreground">
+      {/* Info Section */}
+      <div className="p-2 md:p-3">
+        <h3 className="font-semibold text-xs md:text-sm leading-tight text-foreground line-clamp-2 min-h-[2rem] md:min-h-[2.5rem]">
           {item.name}
         </h3>
-        <p className="text-lg md:text-xl lg:text-2xl font-extrabold text-primary">
+        <p className="text-base md:text-lg font-bold text-primary mt-0.5">
           ₹{item.price}
         </p>
       </div>
