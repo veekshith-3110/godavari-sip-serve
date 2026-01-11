@@ -189,9 +189,6 @@ const Auth = () => {
           </div>
         </div>
         
-        <p className="text-xs text-muted-foreground text-center mt-4">
-          🔒 Your data is protected with Supabase authentication
-        </p>
       </div>
     </div>
   );
