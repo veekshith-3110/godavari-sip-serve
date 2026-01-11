@@ -102,8 +102,8 @@ const Index = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-10 h-10 animate-spin text-primary" />
-          <p className="text-muted-foreground">Loading menu...</p>
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <p className="text-muted-foreground text-sm">Loading menu...</p>
         </div>
       </div>
     );
@@ -112,30 +112,30 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Top Bar */}
-      <header className="bg-primary text-primary-foreground px-5 py-4 flex items-center justify-between shadow-md sticky top-0 z-40">
-        <h1 className="text-lg md:text-xl font-bold tracking-wide uppercase">GODAVARI CAFE</h1>
-        <div className="flex items-center gap-3">
+      <header className="bg-primary text-primary-foreground px-4 py-3 md:px-6 md:py-4 flex items-center justify-between sticky top-0 z-40">
+        <h1 className="text-base md:text-lg font-bold tracking-wide">GODAVARI CAFE</h1>
+        <div className="flex items-center gap-1 md:gap-2">
           {/* Mobile Cart Button */}
           <button
             onClick={() => setIsCartOpen(true)}
-            className="lg:hidden relative p-2.5 rounded-xl hover:bg-white/10 transition-all duration-200"
+            className="lg:hidden relative p-2.5 rounded-full hover:bg-white/10 transition-all"
           >
             <ShoppingCart className="w-5 h-5" strokeWidth={2} />
             {itemCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-white text-primary text-xs font-bold rounded-full flex items-center justify-center shadow-sm">
+              <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-white text-primary text-xs font-bold rounded-full flex items-center justify-center">
                 {itemCount}
               </span>
             )}
           </button>
           <Link
             to="/admin"
-            className="p-2.5 rounded-xl hover:bg-white/10 transition-all duration-200"
+            className="p-2.5 rounded-full hover:bg-white/10 transition-all"
           >
             <Settings className="w-5 h-5" strokeWidth={2} />
           </Link>
           <button
             onClick={signOut}
-            className="p-2.5 rounded-xl hover:bg-white/10 transition-all duration-200"
+            className="p-2.5 rounded-full hover:bg-white/10 transition-all"
             title="Sign Out"
           >
             <LogOut className="w-5 h-5" strokeWidth={2} />
@@ -144,9 +144,9 @@ const Index = () => {
       </header>
 
       {/* Main Content */}
-      <div className="flex h-[calc(100vh-60px)]">
+      <div className="flex h-[calc(100vh-52px)] md:h-[calc(100vh-60px)]">
         {/* Left Side - Product Grid */}
-        <div className="flex-1 lg:w-3/4 p-3 md:p-4 overflow-hidden flex flex-col">
+        <div className="flex-1 p-3 md:p-4 lg:p-5 overflow-hidden flex flex-col">
           {/* Category Tabs */}
           <div className="mb-3 md:mb-4">
             <CategoryTabs
@@ -156,8 +156,8 @@ const Index = () => {
           </div>
 
           {/* Products Grid */}
-          <div className="flex-1 overflow-y-auto pb-20 lg:pb-0">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-2 md:gap-3">
+          <div className="flex-1 overflow-y-auto pb-24 lg:pb-4">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 md:gap-3">
               {filteredItems.map((item) => (
                 <ProductCard
                   key={item.id}
@@ -168,14 +168,14 @@ const Index = () => {
             </div>
             {filteredItems.length === 0 && (
               <div className="flex items-center justify-center h-40">
-                <p className="text-muted-foreground">No items available in this category</p>
+                <p className="text-muted-foreground text-sm">No items available</p>
               </div>
             )}
           </div>
         </div>
 
-        {/* Right Side - Cart (Desktop only) */}
-        <div className="hidden lg:block w-[320px] p-4 pl-0">
+        {/* Right Side - Cart (Desktop/Tablet landscape) */}
+        <div className="hidden lg:flex w-[300px] xl:w-[340px] p-4 pl-0">
           <Cart
             items={cart}
             onRemove={handleRemoveFromCart}
@@ -186,39 +186,39 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Mobile Floating Cart Button */}
+      {/* Mobile/Tablet Floating Cart Button */}
       {itemCount > 0 && (
         <button
           onClick={() => setIsCartOpen(true)}
-          className="lg:hidden fixed bottom-4 left-4 right-4 bg-primary text-primary-foreground py-4 px-6 rounded-2xl shadow-2xl flex items-center justify-between z-30"
+          className="lg:hidden fixed bottom-4 left-3 right-3 md:left-4 md:right-4 bg-primary text-primary-foreground py-4 px-5 rounded-2xl shadow-xl flex items-center justify-between z-30"
         >
           <div className="flex items-center gap-3">
-            <ShoppingCart className="w-6 h-6" />
-            <span className="font-bold">{itemCount} items</span>
+            <ShoppingCart className="w-5 h-5" />
+            <span className="font-semibold">{itemCount} items</span>
           </div>
-          <span className="text-xl font-extrabold">₹{total}</span>
+          <span className="text-lg font-bold">₹{total}</span>
         </button>
       )}
 
       {/* Mobile Cart Overlay */}
       {isCartOpen && (
         <div 
-          className="lg:hidden fixed inset-0 bg-black/50 z-50"
+          className="lg:hidden fixed inset-0 bg-black/40 z-50 backdrop-blur-sm"
           onClick={() => setIsCartOpen(false)}
         />
       )}
 
       {/* Mobile Cart Slide-up Panel */}
-      <div className={`lg:hidden fixed inset-x-0 bottom-0 z-50 transition-transform duration-300 ${
+      <div className={`lg:hidden fixed inset-x-0 bottom-0 z-50 transition-transform duration-300 ease-out ${
         isCartOpen ? 'translate-y-0' : 'translate-y-full'
       }`}>
         <div className="bg-card rounded-t-3xl shadow-2xl max-h-[85vh] flex flex-col">
           {/* Handle bar */}
           <div className="flex items-center justify-between p-4 border-b border-border">
-            <h2 className="text-xl font-bold text-foreground">Current Order</h2>
+            <h2 className="text-lg font-bold text-foreground">Current Order</h2>
             <button
               onClick={() => setIsCartOpen(false)}
-              className="p-2 rounded-lg bg-muted text-muted-foreground"
+              className="p-2 rounded-full bg-secondary text-foreground"
             >
               <X className="w-5 h-5" />
             </button>
