@@ -6,86 +6,83 @@
 
 @layer base {
   :root {
-    /* Chai-inspired warm palette */
-    --background: 30 25% 97%;
-    --foreground: 25 40% 15%;
+    /* Two-color palette: Warm Brown + Off-White */
+    --background: 30 20% 98%;
+    --foreground: 25 50% 20%;
 
-    --card: 30 20% 99%;
-    --card-foreground: 25 40% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 25 50% 20%;
 
-    --popover: 30 20% 99%;
-    --popover-foreground: 25 40% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 25 50% 20%;
 
-    /* Warm chai brown */
-    --primary: 25 65% 45%;
-    --primary-foreground: 30 25% 98%;
+    /* Primary: Warm Brown */
+    --primary: 25 60% 40%;
+    --primary-foreground: 0 0% 100%;
 
-    /* Cream */
-    --secondary: 35 30% 92%;
-    --secondary-foreground: 25 40% 20%;
+    /* Secondary: Light version of primary */
+    --secondary: 25 30% 92%;
+    --secondary-foreground: 25 50% 20%;
 
-    /* Light cream */
-    --muted: 30 20% 94%;
+    /* Muted: Subtle gray with warm undertone */
+    --muted: 25 15% 94%;
     --muted-foreground: 25 20% 45%;
 
-    /* Warm accent */
-    --accent: 20 70% 50%;
-    --accent-foreground: 30 25% 98%;
+    /* Accent: Same as primary for consistency */
+    --accent: 25 60% 40%;
+    --accent-foreground: 0 0% 100%;
 
-    /* Action colors */
-    --destructive: 0 72% 51%;
+    /* Destructive: Using dark brown instead of red */
+    --destructive: 25 70% 30%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 142 70% 45%;
+    /* Success: Dark brown (same family) */
+    --success: 25 60% 35%;
     --success-foreground: 0 0% 100%;
 
-    --info: 210 80% 55%;
+    /* Info: Primary brown */
+    --info: 25 60% 40%;
     --info-foreground: 0 0% 100%;
 
-    --border: 30 20% 88%;
-    --input: 30 20% 88%;
-    --ring: 25 65% 45%;
+    --border: 25 20% 88%;
+    --input: 25 20% 88%;
+    --ring: 25 60% 40%;
 
     --radius: 0.75rem;
 
-    /* Sidebar */
-    --sidebar-background: 25 35% 18%;
+    /* Sidebar: Dark brown */
+    --sidebar-background: 25 50% 18%;
     --sidebar-foreground: 30 20% 95%;
-    --sidebar-primary: 25 65% 55%;
+    --sidebar-primary: 25 60% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 25 30% 25%;
+    --sidebar-accent: 25 40% 25%;
     --sidebar-accent-foreground: 30 20% 95%;
-    --sidebar-border: 25 25% 25%;
-    --sidebar-ring: 25 65% 55%;
-
-    /* Custom gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(25, 65%, 45%) 0%, hsl(15, 70%, 40%) 100%);
-    --gradient-success: linear-gradient(135deg, hsl(142, 70%, 45%) 0%, hsl(142, 70%, 38%) 100%);
-    --gradient-warm: linear-gradient(180deg, hsl(30, 25%, 97%) 0%, hsl(30, 20%, 94%) 100%);
+    --sidebar-border: 25 40% 25%;
+    --sidebar-ring: 25 60% 50%;
   }
 
   .dark {
-    --background: 25 35% 10%;
+    --background: 25 40% 10%;
     --foreground: 30 20% 95%;
-    --card: 25 30% 14%;
+    --card: 25 35% 14%;
     --card-foreground: 30 20% 95%;
-    --popover: 25 30% 14%;
+    --popover: 25 35% 14%;
     --popover-foreground: 30 20% 95%;
-    --primary: 25 65% 55%;
-    --primary-foreground: 25 35% 10%;
-    --secondary: 25 25% 20%;
+    --primary: 25 60% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 25 30% 20%;
     --secondary-foreground: 30 20% 95%;
     --muted: 25 25% 18%;
     --muted-foreground: 30 15% 60%;
-    --accent: 20 70% 55%;
-    --accent-foreground: 25 35% 10%;
-    --destructive: 0 62% 50%;
+    --accent: 25 60% 50%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 25 60% 35%;
     --destructive-foreground: 0 0% 100%;
-    --success: 142 65% 50%;
+    --success: 25 55% 45%;
     --success-foreground: 0 0% 100%;
-    --border: 25 25% 22%;
-    --input: 25 25% 22%;
-    --ring: 25 65% 55%;
+    --border: 25 30% 22%;
+    --input: 25 30% 22%;
+    --ring: 25 60% 50%;
   }
 }
 
@@ -125,14 +122,13 @@
 
   .btn-print {
     @apply w-full py-6 text-2xl font-bold rounded-xl;
-    background: var(--gradient-success);
-    @apply text-success-foreground shadow-lg;
+    @apply bg-primary text-primary-foreground shadow-lg;
     @apply hover:opacity-90 active:scale-95 transition-all;
   }
 
   .btn-expense {
     @apply w-full py-4 text-lg font-bold rounded-xl;
-    @apply bg-destructive text-destructive-foreground;
+    @apply bg-foreground text-background;
     @apply hover:opacity-90 active:scale-95 transition-all;
   }
 
