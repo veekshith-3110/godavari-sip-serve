@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Settings, ShoppingCart, X, LogOut } from 'lucide-react';
+import { Settings, ShoppingCart, X, LogOut, Coffee } from 'lucide-react';
 import { useMenu, MenuItem } from '@/context/MenuContext';
 import { useOrders, CartItem } from '@/hooks/useOrders';
 import { useExpenses } from '@/hooks/useExpenses';
@@ -135,35 +135,41 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Top Bar - with safe area padding for status bar */}
-      <header className="bg-primary text-primary-foreground px-4 py-3 md:px-6 md:py-4 flex items-center justify-between sticky top-0 z-40 pt-[max(0.75rem,var(--safe-area-top))]">
-        <div className="flex items-center gap-2">
-          <h1 className="text-base md:text-lg font-bold tracking-wide">GODAVARI CAFE</h1>
+      {/* Top Bar - Modern Gradient Header */}
+      <header className="bg-gradient-to-r from-primary to-primary/90 text-primary-foreground px-4 py-4 md:px-6 md:py-5 flex items-center justify-between sticky top-0 z-40 pt-[max(1rem,var(--safe-area-top))] shadow-lg shadow-primary/20">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center">
+            <Coffee className="w-5 h-5 md:w-6 md:h-6" />
+          </div>
+          <div>
+            <h1 className="text-lg md:text-xl font-bold tracking-tight">Godavari Cafe</h1>
+            <p className="text-[10px] md:text-xs text-white/70 font-medium -mt-0.5">Fresh & Delicious</p>
+          </div>
         </div>
-        <div className="flex items-center gap-1 md:gap-2">
+        <div className="flex items-center gap-1.5 md:gap-2">
           {/* Mobile Cart Button */}
           <button
             onClick={() => setIsCartOpen(true)}
-            className="lg:hidden relative p-2.5 rounded-full hover:bg-white/10 transition-all"
+            className="lg:hidden relative p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition-all backdrop-blur-sm"
             aria-label="Open cart"
           >
             <ShoppingCart className="w-5 h-5" strokeWidth={2} />
             {itemCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-white text-primary text-xs font-bold rounded-full flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-accent text-accent-foreground text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
                 {itemCount}
               </span>
             )}
           </button>
           <Link
             to="/admin"
-            className="p-2.5 rounded-full hover:bg-white/10 transition-all"
+            className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition-all backdrop-blur-sm"
             aria-label="Admin settings"
           >
             <Settings className="w-5 h-5" strokeWidth={2} />
           </Link>
           <button
             onClick={signOut}
-            className="p-2.5 rounded-full hover:bg-white/10 transition-all"
+            className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition-all backdrop-blur-sm"
             aria-label="Sign Out"
           >
             <LogOut className="w-5 h-5" strokeWidth={2} />

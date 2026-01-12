@@ -16,19 +16,21 @@ const categories: { id: Category | 'all'; icon: React.ReactNode; label: string }
 
 const CategoryTabs = ({ activeCategory, onCategoryChange }: CategoryTabsProps) => {
   return (
-    <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+    <div className="flex gap-2 md:gap-3 overflow-x-auto scrollbar-hide py-1">
       {categories.map((cat) => (
         <button
           key={cat.id}
           onClick={() => onCategoryChange(cat.id)}
-          className={`flex items-center justify-center gap-2 px-4 py-2.5 md:px-5 md:py-3 rounded-full transition-all duration-200 whitespace-nowrap ${
+          className={`flex items-center justify-center gap-2 px-5 py-3 md:px-6 md:py-3.5 rounded-xl transition-all duration-200 whitespace-nowrap font-medium ${
             activeCategory === cat.id 
-              ? 'bg-primary text-primary-foreground shadow-md' 
-              : 'bg-card text-muted-foreground border border-border hover:bg-secondary hover:text-foreground'
+              ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25' 
+              : 'bg-card text-foreground border border-border/60 hover:border-primary/30 hover:bg-primary/5'
           }`}
         >
-          {cat.icon}
-          <span className="text-sm md:text-base font-medium">{cat.label}</span>
+          <span className={activeCategory === cat.id ? 'text-primary-foreground' : 'text-primary'}>
+            {cat.icon}
+          </span>
+          <span className="text-sm md:text-base">{cat.label}</span>
         </button>
       ))}
     </div>
