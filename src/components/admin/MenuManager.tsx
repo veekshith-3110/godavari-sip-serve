@@ -150,7 +150,7 @@ const MenuManager = () => {
         <EmptyState
           type="items"
           title="No Menu Items"
-          message="Start by adding your first menu item"
+          description="Start by adding your first menu item"
           action={{
             label: 'Add First Item',
             onClick: handleAddNew,
