@@ -16,8 +16,8 @@ const AdminSidebar = () => {
 
   return (
     <>
-      {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-sidebar p-4 flex items-center justify-between border-b border-sidebar-border">
+      {/* Mobile Header - with safe area padding */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-sidebar p-4 flex items-center justify-between border-b border-sidebar-border pt-[max(1rem,var(--safe-area-top))]">
         <h1 className="text-lg font-bold text-sidebar-foreground">GODAVARI CAFE</h1>
         <button
           onClick={() => setIsOpen(!isOpen)}

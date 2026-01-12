@@ -36,17 +36,13 @@ export const useNetwork = () => {
       setNetworkState(prev => ({ ...prev, isOnline: true }));
       toast({
         title: 'Back Online',
-        description: 'Orders will now sync automatically',
+        description: 'Connection restored',
       });
     };
 
     const handleOffline = () => {
       setNetworkState(prev => ({ ...prev, isOnline: false }));
-      toast({
-        title: 'Offline Mode',
-        description: 'Orders will be saved locally and synced when online',
-        variant: 'destructive',
-      });
+      // Don't show toast - NoInternetOverlay handles this
     };
 
     // Initial check

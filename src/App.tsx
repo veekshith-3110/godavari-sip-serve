@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { MenuProvider } from "@/context/MenuContext";
 import { useAuth } from "@/hooks/useAuth";
+import NoInternetOverlay from "@/components/NoInternetOverlay";
 import Index from "./pages/Index";
 import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
@@ -34,6 +35,8 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
+      {/* Global No Internet Overlay - blocks entire app when offline */}
+      <NoInternetOverlay />
       <Toaster />
       <Sonner />
       <BrowserRouter>
