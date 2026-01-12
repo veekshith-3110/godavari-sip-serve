@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Printer, Bluetooth, BluetoothSearching, Check, X, TestTube, Wifi } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Printer, Bluetooth, BluetoothSearching, Check, X, TestTube, Wifi, AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { usePrinter } from '@/hooks/usePrinter';
@@ -18,6 +18,37 @@ const PrinterSettings = () => {
     printReceipt
   } = usePrinter();
   const { toast } = useToast();
+  const [scanComplete, setScanComplete] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
+
+  // Reset scan state when scanning starts
+  useEffect(() => {
+    if (isScanning) {
+      setScanComplete(false);
+      setScanError(null);
+    }
+  }, [isScanning]);
+
+  // Mark scan as complete when scanning stops
+  useEffect(() => {
+    if (!isScanning && scanComplete === false && availablePrinters !== undefined) {
+      // Small delay to allow printer list to populate
+      const timer = setTimeout(() => {
+        setScanComplete(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isScanning, availablePrinters, scanComplete]);
+
+  const handleScan = async () => {
+    setScanComplete(false);
+    setScanError(null);
+    try {
+      await scanForPrinters();
+    } catch (error: any) {
+      setScanError(error.message || 'Scan failed');
+    }
+  };
 
   const handleTestPrint = async () => {
     const testItems = [
@@ -82,44 +113,58 @@ const PrinterSettings = () => {
           </CardTitle>
           <CardDescription>
             {isNative 
-              ? 'Scan for nearby Bluetooth thermal printers'
+              ? 'Scan for nearby Bluetooth thermal printers. Make sure Bluetooth is enabled and the printer is powered on.'
               : 'Bluetooth printing requires the native mobile app'
             }
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Button 
-            onClick={scanForPrinters} 
+            onClick={handleScan} 
             disabled={isScanning}
             className="w-full"
+            size="lg"
           >
             {isScanning ? (
               <>
-                <BluetoothSearching className="w-4 h-4 mr-2 animate-pulse" />
-                Scanning...
+                <BluetoothSearching className="w-5 h-5 mr-2 animate-pulse" />
+                Scanning for printers...
               </>
             ) : (
               <>
-                <BluetoothSearching className="w-4 h-4 mr-2" />
+                <RefreshCw className="w-5 h-5 mr-2" />
                 Scan for Printers
               </>
             )}
           </Button>
 
+          {/* Scan Error */}
+          {scanError && (
+            <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
+              <div>
+                <p className="font-medium text-destructive">Scan Failed</p>
+                <p className="text-sm text-muted-foreground mt-1">{scanError}</p>
+              </div>
+            </div>
+          )}
+
           {/* Found Printers List */}
           {availablePrinters.length > 0 && (
             <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">Found Printers:</p>
+              <p className="text-sm font-medium text-foreground">Found {availablePrinters.length} printer{availablePrinters.length !== 1 ? 's' : ''}:</p>
               {availablePrinters.map((printer) => (
                 <div
                   key={printer.address}
-                  className="flex items-center justify-between p-3 rounded-lg border bg-card"
+                  className="flex items-center justify-between p-4 rounded-xl border bg-card hover:bg-secondary/50 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <Printer className="w-5 h-5 text-muted-foreground" />
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <Printer className="w-5 h-5 text-primary" />
+                    </div>
                     <div>
-                      <p className="font-medium">{printer.name}</p>
-                      <p className="text-xs text-muted-foreground">{printer.address}</p>
+                      <p className="font-medium">{printer.name || 'Unknown Printer'}</p>
+                      <p className="text-xs text-muted-foreground font-mono">{printer.address}</p>
                     </div>
                   </div>
                   <Button
@@ -141,9 +186,31 @@ const PrinterSettings = () => {
             </div>
           )}
 
+          {/* No Printers Found Message */}
+          {scanComplete && !isScanning && availablePrinters.length === 0 && !scanError && isNative && (
+            <div className="p-6 rounded-xl bg-secondary/50 border border-border text-center">
+              <div className="w-12 h-12 rounded-full bg-muted mx-auto mb-3 flex items-center justify-center">
+                <Printer className="w-6 h-6 text-muted-foreground" />
+              </div>
+              <p className="font-medium text-foreground">No printers found</p>
+              <p className="text-sm text-muted-foreground mt-1 max-w-xs mx-auto">
+                Make sure your Bluetooth printer is turned on, in pairing mode, and within range.
+              </p>
+              <div className="mt-4 text-left text-sm text-muted-foreground space-y-1">
+                <p className="font-medium text-foreground">Troubleshooting:</p>
+                <ol className="list-decimal list-inside space-y-1">
+                  <li>Turn your printer off and on</li>
+                  <li>Enable Bluetooth on your device</li>
+                  <li>Pair the printer in system settings first</li>
+                  <li>Try scanning again</li>
+                </ol>
+              </div>
+            </div>
+          )}
+
           {!isNative && (
-            <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
-              <p className="text-sm text-amber-600 dark:text-amber-400">
+            <div className="p-4 rounded-xl bg-warning/10 border border-warning/20">
+              <p className="text-sm text-warning-foreground">
                 <strong>Note:</strong> To use Bluetooth printers, you need to build and install the native mobile app. 
                 For now, you can use the browser's print function with any USB or network printer.
               </p>

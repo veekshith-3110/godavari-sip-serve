@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Settings, ShoppingCart, X, LogOut, Coffee } from 'lucide-react';
 import { useMenu, MenuItem } from '@/context/MenuContext';
@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { usePrinter } from '@/hooks/usePrinter';
 import { useBackHandler } from '@/hooks/useBackHandler';
 import { useButtonLock } from '@/hooks/useButtonLock';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import ProductCard from '@/components/ProductCard';
 import CategoryTabs from '@/components/CategoryTabs';
 import Cart from '@/components/Cart';
@@ -17,13 +18,14 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import EmptyState from '@/components/EmptyState';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import SkeletonCard from '@/components/SkeletonCard';
+import PullToRefreshIndicator from '@/components/PullToRefresh';
 import { useToast } from '@/hooks/use-toast';
 
 type Category = 'hot' | 'snacks' | 'cold' | 'smoke';
 
 const Index = () => {
   const navigate = useNavigate();
-  const { menuItems, loading: menuLoading, isOffline } = useMenu();
+  const { menuItems, loading: menuLoading, isOffline, refetch: refetchMenu } = useMenu();
   const { nextTokenNumber, createOrder, pendingOfflineOrders } = useOrders();
   const { addExpense } = useExpenses();
   const { signOut } = useAuth();
@@ -36,6 +38,22 @@ const Index = () => {
   const [showDiscardDialog, setShowDiscardDialog] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  // Pull to refresh
+  const handleRefresh = useCallback(async () => {
+    if (refetchMenu) {
+      await refetchMenu();
+      toast({
+        title: 'Refreshed',
+        description: 'Menu updated successfully',
+      });
+    }
+  }, [refetchMenu, toast]);
+
+  const { containerRef, pullDistance, isRefreshing } = usePullToRefresh({
+    onRefresh: handleRefresh,
+    threshold: 80,
+  });
 
   // Back button handler - confirm before discarding cart
   useBackHandler({
@@ -189,8 +207,20 @@ const Index = () => {
             />
           </div>
 
-          {/* Products Grid */}
-          <div className="flex-1 overflow-y-auto pb-24 lg:pb-4">
+          {/* Products Grid with Pull to Refresh */}
+          <div 
+            ref={containerRef as React.RefObject<HTMLDivElement>}
+            className="flex-1 overflow-y-auto pb-24 lg:pb-4 relative"
+            style={{ 
+              transform: pullDistance > 0 ? `translateY(${pullDistance}px)` : undefined,
+              transition: pullDistance === 0 ? 'transform 0.2s ease-out' : undefined,
+            }}
+          >
+            <PullToRefreshIndicator 
+              pullDistance={pullDistance} 
+              isRefreshing={isRefreshing} 
+            />
+            
             {menuLoading ? (
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 md:gap-3">
                 {Array.from({ length: 12 }).map((_, i) => (

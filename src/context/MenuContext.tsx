@@ -9,6 +9,7 @@ interface MenuContextType {
   updateMenuItem: (item: MenuItem) => Promise<void>;
   toggleAvailability: (itemId: string) => Promise<void>;
   deleteMenuItem: (itemId: string) => Promise<void>;
+  refetch: () => Promise<void>;
 }
 
 const MenuContext = createContext<MenuContextType | undefined>(undefined);
@@ -22,6 +23,7 @@ export const MenuProvider = ({ children }: { children: ReactNode }) => {
     updateMenuItem,
     toggleAvailability,
     deleteMenuItem,
+    refetch,
   } = useMenuItems();
 
   return (
@@ -34,6 +36,7 @@ export const MenuProvider = ({ children }: { children: ReactNode }) => {
         updateMenuItem,
         toggleAvailability,
         deleteMenuItem,
+        refetch,
       }}
     >
       {children}
