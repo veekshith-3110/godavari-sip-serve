@@ -97,11 +97,7 @@ export const useOrders = () => {
       setNextTokenNumber(nextToken);
     } catch (error: any) {
       console.error('Error fetching orders:', error);
-      toast({
-        title: 'Failed to load orders',
-        description: error.message || 'Please check your connection',
-        variant: 'destructive',
-      });
+      // Don't show scary errors - the NoInternetOverlay handles offline state
     } finally {
       setLoading(false);
     }

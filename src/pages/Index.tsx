@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Settings, ShoppingCart, X, Loader2, LogOut, WifiOff } from 'lucide-react';
+import { Settings, ShoppingCart, X, Loader2, LogOut } from 'lucide-react';
 import { useMenu, MenuItem } from '@/context/MenuContext';
 import { useOrders, CartItem } from '@/hooks/useOrders';
 import { useExpenses } from '@/hooks/useExpenses';
@@ -13,7 +13,6 @@ import CategoryTabs from '@/components/CategoryTabs';
 import Cart from '@/components/Cart';
 import PrintReceipt from '@/components/PrintReceipt';
 import ExpenseModal from '@/components/ExpenseModal';
-import NetworkStatus from '@/components/NetworkStatus';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import EmptyState from '@/components/EmptyState';
 import { useToast } from '@/hooks/use-toast';
@@ -127,18 +126,10 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Network Status Banner */}
-      <NetworkStatus />
-      {/* Top Bar */}
-      <header className="bg-primary text-primary-foreground px-4 py-3 md:px-6 md:py-4 flex items-center justify-between sticky top-0 z-40">
+      {/* Top Bar - with safe area padding for status bar */}
+      <header className="bg-primary text-primary-foreground px-4 py-3 md:px-6 md:py-4 flex items-center justify-between sticky top-0 z-40 pt-[max(0.75rem,var(--safe-area-top))]">
         <div className="flex items-center gap-2">
           <h1 className="text-base md:text-lg font-bold tracking-wide">GODAVARI CAFE</h1>
-          {isOffline && (
-            <span className="flex items-center gap-1 text-xs bg-yellow-500/20 text-yellow-200 px-2 py-0.5 rounded-full">
-              <WifiOff className="w-3 h-3" />
-              Offline
-            </span>
-          )}
         </div>
         <div className="flex items-center gap-1 md:gap-2">
           {/* Mobile Cart Button */}
@@ -170,7 +161,7 @@ const Index = () => {
       </header>
 
       {/* Main Content */}
-      <div className="flex h-[calc(100vh-52px)] md:h-[calc(100vh-60px)]">
+      <div className="flex h-[calc(100vh-52px-var(--safe-area-top))] md:h-[calc(100vh-60px-var(--safe-area-top))]">
         {/* Left Side - Product Grid */}
         <div className="flex-1 p-3 md:p-4 lg:p-5 overflow-hidden flex flex-col">
           {/* Category Tabs */}

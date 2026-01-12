@@ -71,15 +71,8 @@ export const useMenuItems = () => {
       setLoading(false);
     }
 
-    // If offline, use cache only
+    // If offline, use cache only (no error toast - overlay handles it)
     if (!navigator.onLine) {
-      if (!cachedItems || cachedItems.length === 0) {
-        toast({
-          title: 'Offline',
-          description: 'No cached menu available. Connect to internet.',
-          variant: 'destructive',
-        });
-      }
       setLoading(false);
       return;
     }
@@ -106,14 +99,7 @@ export const useMenuItems = () => {
       cacheMenuItems(items); // Save to cache for offline use
     } catch (error) {
       console.error('Error fetching menu items:', error);
-      // Only show error if no cached data available
-      if (!cachedItems || cachedItems.length === 0) {
-        toast({
-          title: 'Error',
-          description: 'Failed to load menu items',
-          variant: 'destructive',
-        });
-      }
+      // Don't show scary error toasts - the NoInternetOverlay handles offline state
     } finally {
       setLoading(false);
     }

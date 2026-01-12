@@ -10,7 +10,7 @@ const Admin = () => {
   return (
     <div className="flex min-h-screen bg-background">
       <AdminSidebar />
-      <main className="flex-1 p-4 lg:p-6 overflow-y-auto pt-20 lg:pt-6">
+      <main className="flex-1 p-4 lg:p-6 overflow-y-auto pt-[calc(5rem+var(--safe-area-top))] lg:pt-6">
         <Routes>
           <Route index element={<DashboardWidgets />} />
           <Route path="sales" element={<SalesReports />} />

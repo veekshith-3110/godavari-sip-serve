@@ -117,7 +117,7 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4 pt-[max(1rem,var(--safe-area-top))]">
       <div className="w-full max-w-sm">
         <div className="bg-card rounded-2xl shadow-xl p-8 border">
           <div className="flex justify-center mb-6">
