@@ -12,6 +12,11 @@ interface CartItem {
   quantity: number;
 }
 
+interface PrinterError {
+  code: string;
+  message: string;
+}
+
 // Check if we're in a Capacitor native environment
 const isCapacitor = () => {
   return typeof (window as any).Capacitor !== 'undefined' && 
@@ -34,6 +39,8 @@ export const usePrinter = () => {
   const [selectedPrinter, setSelectedPrinter] = useState<PrinterDevice | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [availablePrinters, setAvailablePrinters] = useState<PrinterDevice[]>([]);
+  const [isPrinting, setIsPrinting] = useState(false);
+  const [printerError, setPrinterError] = useState<PrinterError | null>(null);
   const { toast } = useToast();
 
   const isNative = isCapacitor();
@@ -68,6 +75,39 @@ export const usePrinter = () => {
     };
   }, [isNative]);
 
+  // Check Bluetooth permission status
+  const checkBluetoothPermission = useCallback(async (): Promise<boolean> => {
+    if (!isNative) return true;
+
+    try {
+      const thermalPrinter = await getThermalPrinter();
+      if (!thermalPrinter) return false;
+
+      // Most plugins have a permission check method
+      // If not, we'll catch the error during scan
+      return true;
+    } catch {
+      return false;
+    }
+  }, [isNative]);
+
+  // Ping printer to check if it's still connected
+  const pingPrinter = useCallback(async (): Promise<boolean> => {
+    if (!isNative || !selectedPrinter) return false;
+
+    try {
+      const thermalPrinter = await getThermalPrinter();
+      if (!thermalPrinter) return false;
+
+      const connected = await thermalPrinter.isConnected();
+      setIsConnected(connected);
+      return connected;
+    } catch {
+      setIsConnected(false);
+      return false;
+    }
+  }, [isNative, selectedPrinter]);
+
   const scanForPrinters = useCallback(async () => {
     if (!isNative) {
       toast({
@@ -78,8 +118,24 @@ export const usePrinter = () => {
       return [];
     }
 
+    // Check permissions first
+    const hasPermission = await checkBluetoothPermission();
+    if (!hasPermission) {
+      setPrinterError({
+        code: 'PERMISSION_DENIED',
+        message: 'Bluetooth permission required',
+      });
+      toast({
+        title: "Permission Required",
+        description: "Please enable Bluetooth permission in Settings",
+        variant: "destructive"
+      });
+      return [];
+    }
+
     setIsScanning(true);
     setAvailablePrinters([]);
+    setPrinterError(null);
     
     try {
       const printer = await getThermalPrinter();
@@ -98,6 +154,10 @@ export const usePrinter = () => {
       return [];
     } catch (error: any) {
       setIsScanning(false);
+      
+      const errorCode = error.code || 'SCAN_FAILED';
+      setPrinterError({ code: errorCode, message: error.message });
+      
       toast({
         title: "Scan Failed",
         description: error.message || "Could not scan for printers",
@@ -105,7 +165,7 @@ export const usePrinter = () => {
       });
       return [];
     }
-  }, [isNative, toast]);
+  }, [isNative, checkBluetoothPermission, toast]);
 
   const stopScanning = useCallback(async () => {
     try {
@@ -120,6 +180,8 @@ export const usePrinter = () => {
   }, []);
 
   const connectToPrinter = useCallback(async (printer: PrinterDevice) => {
+    setPrinterError(null);
+    
     try {
       const thermalPrinter = await getThermalPrinter();
       if (!thermalPrinter) {
@@ -144,9 +206,12 @@ export const usePrinter = () => {
         throw new Error('Connection failed');
       }
     } catch (error: any) {
+      const errorCode = error.code || 'CONNECTION_FAILED';
+      setPrinterError({ code: errorCode, message: error.message });
+      
       toast({
         title: "Connection Failed",
-        description: error.message || "Could not connect to printer",
+        description: error.message || "Could not connect to printer. Check if it's powered on.",
         variant: "destructive"
       });
       return false;
@@ -165,6 +230,7 @@ export const usePrinter = () => {
     
     setSelectedPrinter(null);
     setIsConnected(false);
+    setPrinterError(null);
     localStorage.removeItem('connectedPrinter');
     
     toast({
@@ -179,25 +245,38 @@ export const usePrinter = () => {
     tokenNumber: number,
     businessName: string = 'GODAVARI CAFE'
   ): Promise<boolean> => {
+    if (isPrinting) return false; // Prevent double-prints
+    
+    setIsPrinting(true);
+    setPrinterError(null);
+
     // For web/non-native, use browser print
     if (!isNative) {
-      return printBrowserReceipt(items, total, tokenNumber, businessName);
+      const result = printBrowserReceipt(items, total, tokenNumber, businessName);
+      setIsPrinting(false);
+      return result;
     }
 
     try {
       const thermalPrinter = await getThermalPrinter();
       if (!thermalPrinter) {
+        setIsPrinting(false);
         return printBrowserReceipt(items, total, tokenNumber, businessName);
       }
 
-      // Check if connected
+      // PING printer first to check connection
       const connected = await thermalPrinter.isConnected();
       if (!connected) {
+        setPrinterError({
+          code: 'NOT_CONNECTED',
+          message: 'Printer not connected',
+        });
         toast({
-          title: "Not Connected",
+          title: "Printer Not Connected",
           description: "Please connect to a printer first. Using browser print...",
           variant: "destructive"
         });
+        setIsPrinting(false);
         return printBrowserReceipt(items, total, tokenNumber, businessName);
       }
 
@@ -239,18 +318,36 @@ export const usePrinter = () => {
         .cutPaper()
         .write();
 
+      setIsPrinting(false);
       return true;
     } catch (error: any) {
       console.error('Print error:', error);
-      toast({
-        title: "Print Failed",
-        description: "Trying browser print...",
-        variant: "destructive"
-      });
       
+      // Check for specific error codes
+      const errorCode = error.code || 'PRINT_FAILED';
+      let errorMessage = error.message || 'Print failed';
+      
+      // Handle paper out error
+      if (errorCode === 'NO_PAPER' || errorMessage.toLowerCase().includes('paper')) {
+        setPrinterError({ code: 'NO_PAPER', message: 'Out of paper' });
+        toast({
+          title: "Printer Out of Paper",
+          description: "Please refill the paper roll and try again",
+          variant: "destructive"
+        });
+      } else {
+        setPrinterError({ code: errorCode, message: errorMessage });
+        toast({
+          title: "Print Failed",
+          description: "Trying browser print...",
+          variant: "destructive"
+        });
+      }
+      
+      setIsPrinting(false);
       return printBrowserReceipt(items, total, tokenNumber, businessName);
     }
-  }, [isNative, toast]);
+  }, [isNative, isPrinting, toast]);
 
   // Browser print fallback (uses hidden iframe)
   const printBrowserReceipt = (
@@ -340,7 +437,10 @@ export const usePrinter = () => {
     if (saved) {
       try {
         const printer = JSON.parse(saved) as PrinterDevice;
-        await connectToPrinter(printer);
+        const success = await connectToPrinter(printer);
+        if (!success) {
+          localStorage.removeItem('connectedPrinter');
+        }
       } catch {
         localStorage.removeItem('connectedPrinter');
       }
@@ -353,11 +453,15 @@ export const usePrinter = () => {
     isScanning,
     availablePrinters,
     isNative,
+    isPrinting,
+    printerError,
     scanForPrinters,
     stopScanning,
     connectToPrinter,
     disconnect,
     printReceipt,
-    restoreConnection
+    restoreConnection,
+    pingPrinter,
+    checkBluetoothPermission,
   };
 };
