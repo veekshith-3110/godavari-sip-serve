@@ -1,33 +1,49 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Settings, ShoppingCart, X, Loader2, LogOut, WifiOff } from 'lucide-react';
 import { useMenu, MenuItem } from '@/context/MenuContext';
 import { useOrders, CartItem } from '@/hooks/useOrders';
 import { useExpenses } from '@/hooks/useExpenses';
 import { useAuth } from '@/hooks/useAuth';
 import { usePrinter } from '@/hooks/usePrinter';
+import { useBackHandler } from '@/hooks/useBackHandler';
+import { useButtonLock } from '@/hooks/useButtonLock';
 import ProductCard from '@/components/ProductCard';
 import CategoryTabs from '@/components/CategoryTabs';
 import Cart from '@/components/Cart';
 import PrintReceipt from '@/components/PrintReceipt';
 import ExpenseModal from '@/components/ExpenseModal';
+import NetworkStatus from '@/components/NetworkStatus';
+import ConfirmDialog from '@/components/ConfirmDialog';
+import EmptyState from '@/components/EmptyState';
 import { useToast } from '@/hooks/use-toast';
 
 type Category = 'hot' | 'snacks' | 'cold' | 'smoke';
 
 const Index = () => {
+  const navigate = useNavigate();
   const { menuItems, loading: menuLoading, isOffline } = useMenu();
-  const { nextTokenNumber, createOrder } = useOrders();
+  const { nextTokenNumber, createOrder, pendingOfflineOrders } = useOrders();
   const { addExpense } = useExpenses();
   const { signOut } = useAuth();
-  const { printReceipt, isConnected, isNative, restoreConnection } = usePrinter();
+  const { printReceipt, isConnected, isNative, restoreConnection, isPrinting: printerBusy } = usePrinter();
+  const { isLocked: isPrintLocked, executeWithLock } = useButtonLock(3000);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [activeCategory, setActiveCategory] = useState<Category | 'all'>('all');
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isPrinting, setIsPrinting] = useState(false);
+  const [showDiscardDialog, setShowDiscardDialog] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  // Back button handler - confirm before discarding cart
+  useBackHandler({
+    enabled: cart.length > 0,
+    onBack: () => {
+      setShowDiscardDialog(true);
+      return true; // Prevent default back
+    },
+  });
 
   // Restore printer connection on mount
   useEffect(() => {
@@ -61,34 +77,32 @@ const Index = () => {
   };
 
   const handlePrint = async () => {
-    if (cart.length === 0 || isPrinting) return;
+    if (cart.length === 0 || isPrintLocked || printerBusy) return;
     
-    setIsPrinting(true);
-    const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    
-    // Save order to database
-    const order = await createOrder(cart, total);
-    
-    if (order) {
-      // Use the printer hook - prints silently if connected via Bluetooth (native app)
-      // Falls back to browser print dialog if not connected or on web
-      await printReceipt(
-        cart.map(item => ({ name: item.name, price: item.price, quantity: item.quantity })),
-        total,
-        order.tokenNumber,
-        'GODAVARI CAFE'
-      );
+    await executeWithLock(async () => {
+      const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      
+      // Save order to database (works offline too)
+      const order = await createOrder(cart, total);
+      
+      if (order) {
+        // Print receipt
+        await printReceipt(
+          cart.map(item => ({ name: item.name, price: item.price, quantity: item.quantity })),
+          total,
+          order.tokenNumber,
+          'GODAVARI CAFE'
+        );
 
-      toast({
-        title: `Token #${order.tokenNumber} Printed`,
-        description: `₹${total} - ${cart.length} items`,
-      });
+        toast({
+          title: `Token #${order.tokenNumber}${order.isOffline ? ' (Offline)' : ''}`,
+          description: `₹${total} - ${cart.length} items`,
+        });
 
-      setCart([]);
-      setIsCartOpen(false);
-    }
-    
-    setIsPrinting(false);
+        setCart([]);
+        setIsCartOpen(false);
+      }
+    });
   };
 
   const handleExpenseSubmit = async (description: string, amount: number) => {
@@ -109,8 +123,12 @@ const Index = () => {
     );
   }
 
+  const isPrinting = isPrintLocked || printerBusy;
+
   return (
     <div className="min-h-screen bg-background">
+      {/* Network Status Banner */}
+      <NetworkStatus />
       {/* Top Bar */}
       <header className="bg-primary text-primary-foreground px-4 py-3 md:px-6 md:py-4 flex items-center justify-between sticky top-0 z-40">
         <div className="flex items-center gap-2">
@@ -175,9 +193,7 @@ const Index = () => {
               ))}
             </div>
             {filteredItems.length === 0 && (
-              <div className="flex items-center justify-center h-40">
-                <p className="text-muted-foreground text-sm">No items available</p>
-              </div>
+              <EmptyState type="items" />
             )}
           </div>
         </div>
@@ -262,6 +278,21 @@ const Index = () => {
         isOpen={isExpenseModalOpen}
         onClose={() => setIsExpenseModalOpen(false)}
         onSubmit={handleExpenseSubmit}
+      />
+
+      {/* Discard Cart Confirmation */}
+      <ConfirmDialog
+        open={showDiscardDialog}
+        onOpenChange={setShowDiscardDialog}
+        title="Discard Order?"
+        description={`You have ${cart.length} item${cart.length > 1 ? 's' : ''} in your cart. Are you sure you want to discard this order?`}
+        confirmText="Discard"
+        cancelText="Keep Order"
+        variant="destructive"
+        onConfirm={() => {
+          setCart([]);
+          setShowDiscardDialog(false);
+        }}
       />
     </div>
   );
