@@ -112,6 +112,16 @@ export const useMenuItems = () => {
   };
 
   const addMenuItem = async (item: Omit<MenuItem, 'id'>) => {
+    // Check network
+    if (!navigator.onLine) {
+      toast({
+        title: 'No Internet',
+        description: 'Please connect to add menu items',
+        variant: 'destructive',
+      });
+      return null;
+    }
+
     try {
       const { data, error } = await supabase
         .from('menu_items')
@@ -139,13 +149,13 @@ export const useMenuItems = () => {
       };
 
       setMenuItems((prev) => [...prev, newItem]);
-      toast({ title: 'Success', description: 'Menu item added' });
+      toast({ title: 'Item Added', description: newItem.name });
       return newItem;
     } catch (error) {
       console.error('Error adding menu item:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to add menu item',
+        title: 'Failed to Add',
+        description: 'Please try again',
         variant: 'destructive',
       });
       return null;
@@ -153,6 +163,20 @@ export const useMenuItems = () => {
   };
 
   const updateMenuItem = async (item: MenuItem) => {
+    // Check network
+    if (!navigator.onLine) {
+      toast({
+        title: 'No Internet',
+        description: 'Please connect to update menu items',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Optimistic update
+    const originalItems = [...menuItems];
+    setMenuItems((prev) => prev.map((i) => (i.id === item.id ? item : i)));
+
     try {
       const { error } = await supabase
         .from('menu_items')
@@ -168,13 +192,14 @@ export const useMenuItems = () => {
 
       if (error) throw error;
 
-      setMenuItems((prev) => prev.map((i) => (i.id === item.id ? item : i)));
-      toast({ title: 'Success', description: 'Menu item updated' });
+      toast({ title: 'Updated', description: item.name });
     } catch (error) {
+      // Rollback
+      setMenuItems(originalItems);
       console.error('Error updating menu item:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to update menu item',
+        title: 'Update Failed',
+        description: 'Please try again',
         variant: 'destructive',
       });
     }
@@ -184,6 +209,21 @@ export const useMenuItems = () => {
     const item = menuItems.find((i) => i.id === itemId);
     if (!item) return;
 
+    // Check network
+    if (!navigator.onLine) {
+      toast({
+        title: 'No Internet',
+        description: 'Please connect to update availability',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Optimistic update
+    setMenuItems((prev) =>
+      prev.map((i) => (i.id === itemId ? { ...i, available: !i.available } : i))
+    );
+
     try {
       const { error } = await supabase
         .from('menu_items')
@@ -191,33 +231,52 @@ export const useMenuItems = () => {
         .eq('id', itemId);
 
       if (error) throw error;
-
-      setMenuItems((prev) =>
-        prev.map((i) => (i.id === itemId ? { ...i, available: !i.available } : i))
-      );
     } catch (error) {
+      // Rollback
+      setMenuItems((prev) =>
+        prev.map((i) => (i.id === itemId ? { ...i, available: item.available } : i))
+      );
       console.error('Error toggling availability:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to update availability',
+        title: 'Update Failed',
+        description: 'Please try again',
         variant: 'destructive',
       });
     }
   };
 
   const deleteMenuItem = async (itemId: string) => {
+    // Check network
+    if (!navigator.onLine) {
+      toast({
+        title: 'No Internet',
+        description: 'Please connect to delete items',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Store for rollback
+    const itemToDelete = menuItems.find((i) => i.id === itemId);
+    
+    // Optimistic delete
+    setMenuItems((prev) => prev.filter((i) => i.id !== itemId));
+
     try {
       const { error } = await supabase.from('menu_items').delete().eq('id', itemId);
 
       if (error) throw error;
 
-      setMenuItems((prev) => prev.filter((i) => i.id !== itemId));
-      toast({ title: 'Success', description: 'Menu item deleted' });
+      toast({ title: 'Deleted', description: 'Menu item removed' });
     } catch (error) {
+      // Rollback
+      if (itemToDelete) {
+        setMenuItems((prev) => [...prev, itemToDelete]);
+      }
       console.error('Error deleting menu item:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to delete menu item',
+        title: 'Delete Failed',
+        description: 'Please try again',
         variant: 'destructive',
       });
     }
