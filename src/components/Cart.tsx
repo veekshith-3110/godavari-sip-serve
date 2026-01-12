@@ -1,5 +1,5 @@
-import { CartItem } from '@/data/mockData';
-import { Trash2, Printer, Banknote } from 'lucide-react';
+import { CartItem } from '@/hooks/useOrders';
+import { Trash2, Printer, Banknote, Loader2, WifiOff } from 'lucide-react';
 
 interface CartProps {
   items: CartItem[];
@@ -8,11 +8,24 @@ interface CartProps {
   onPrint: () => void;
   onExpense: () => void;
   isMobile?: boolean;
+  isPrinting?: boolean;
+  isOffline?: boolean;
 }
 
-const Cart = ({ items, onRemove, onClear, onPrint, onExpense, isMobile = false }: CartProps) => {
+const Cart = ({ 
+  items, 
+  onRemove, 
+  onClear, 
+  onPrint, 
+  onExpense, 
+  isMobile = false,
+  isPrinting = false,
+  isOffline = false 
+}: CartProps) => {
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+
+  const canPrint = items.length > 0 && !isPrinting && !isOffline;
 
   if (isMobile) {
     return (
@@ -21,6 +34,9 @@ const Cart = ({ items, onRemove, onClear, onPrint, onExpense, isMobile = false }
         <div className="flex-1 overflow-y-auto p-4 space-y-2">
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+                <Banknote className="w-8 h-8" />
+              </div>
               <p className="text-base font-medium">No items yet</p>
               <p className="text-sm">Tap products to add</p>
             </div>
@@ -36,7 +52,8 @@ const Cart = ({ items, onRemove, onClear, onPrint, onExpense, isMobile = false }
                 <span className="font-bold text-foreground">₹{item.price * item.quantity}</span>
                 <button
                   onClick={() => onRemove(item.id)}
-                  className="p-2 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
+                  className="p-2 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors active:scale-95"
+                  aria-label={`Remove ${item.name}`}
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -47,8 +64,20 @@ const Cart = ({ items, onRemove, onClear, onPrint, onExpense, isMobile = false }
 
         {/* Checkout Section */}
         <div className="p-4 border-t border-border bg-secondary/30 space-y-3">
+          {/* Offline Warning */}
+          {isOffline && (
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-300 text-xs">
+              <WifiOff className="w-4 h-4 flex-shrink-0" />
+              <span>Offline - Cannot print. Connect to internet.</span>
+            </div>
+          )}
+
           {/* Quick Expense Button */}
-          <button onClick={onExpense} className="btn-expense flex items-center justify-center gap-2">
+          <button 
+            onClick={onExpense} 
+            disabled={isOffline}
+            className="btn-expense flex items-center justify-center gap-2 disabled:opacity-50"
+          >
             <Banknote className="w-4 h-4" />
             Cash Out
           </button>
@@ -62,11 +91,21 @@ const Cart = ({ items, onRemove, onClear, onPrint, onExpense, isMobile = false }
           {/* Print Button */}
           <button
             onClick={onPrint}
-            disabled={items.length === 0}
+            disabled={!canPrint}
             className="btn-print flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label={isPrinting ? 'Printing...' : 'Print Token'}
           >
-            <Printer className="w-5 h-5" />
-            PRINT TOKEN
+            {isPrinting ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                PRINTING...
+              </>
+            ) : (
+              <>
+                <Printer className="w-5 h-5" />
+                PRINT TOKEN
+              </>
+            )}
           </button>
         </div>
       </div>
@@ -79,7 +118,7 @@ const Cart = ({ items, onRemove, onClear, onPrint, onExpense, isMobile = false }
       <div className="p-4 border-b border-border">
         <h2 className="text-lg font-bold text-foreground">Current Order</h2>
         {itemCount > 0 && (
-          <p className="text-sm text-muted-foreground">{itemCount} items</p>
+          <p className="text-sm text-muted-foreground">{itemCount} item{itemCount !== 1 && 's'}</p>
         )}
       </div>
 
@@ -87,6 +126,9 @@ const Cart = ({ items, onRemove, onClear, onPrint, onExpense, isMobile = false }
       <div className="flex-1 overflow-y-auto p-3 space-y-2">
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+              <Banknote className="w-8 h-8" />
+            </div>
             <p className="text-base font-medium">No items yet</p>
             <p className="text-sm">Tap products to add</p>
           </div>
@@ -103,7 +145,8 @@ const Cart = ({ items, onRemove, onClear, onPrint, onExpense, isMobile = false }
                 <span className="font-bold text-foreground text-sm">₹{item.price * item.quantity}</span>
                 <button
                   onClick={() => onRemove(item.id)}
-                  className="p-1.5 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
+                  className="p-1.5 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors active:scale-95"
+                  aria-label={`Remove ${item.name}`}
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -113,9 +156,21 @@ const Cart = ({ items, onRemove, onClear, onPrint, onExpense, isMobile = false }
         )}
       </div>
 
+      {/* Offline Warning */}
+      {isOffline && (
+        <div className="mx-3 mb-2 flex items-center gap-2 p-2 rounded-lg bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-300 text-xs">
+          <WifiOff className="w-4 h-4 flex-shrink-0" />
+          <span>Offline - Cannot print</span>
+        </div>
+      )}
+
       {/* Quick Expense Button */}
       <div className="px-3 pb-2">
-        <button onClick={onExpense} className="btn-expense flex items-center justify-center gap-2">
+        <button 
+          onClick={onExpense} 
+          disabled={isOffline}
+          className="btn-expense flex items-center justify-center gap-2 disabled:opacity-50"
+        >
           <Banknote className="w-4 h-4" />
           Cash Out
         </button>
@@ -132,11 +187,21 @@ const Cart = ({ items, onRemove, onClear, onPrint, onExpense, isMobile = false }
         {/* Print Button */}
         <button
           onClick={onPrint}
-          disabled={items.length === 0}
+          disabled={!canPrint}
           className="btn-print flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label={isPrinting ? 'Printing...' : 'Print Token'}
         >
-          <Printer className="w-5 h-5" />
-          PRINT TOKEN
+          {isPrinting ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              PRINTING...
+            </>
+          ) : (
+            <>
+              <Printer className="w-5 h-5" />
+              PRINT TOKEN
+            </>
+          )}
         </button>
       </div>
     </div>
