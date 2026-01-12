@@ -205,7 +205,7 @@ const Index = () => {
               <EmptyState
                 type={menuItems.length === 0 ? 'items' : 'no-data'}
                 title={menuItems.length === 0 ? 'No Menu Items' : 'No Items in Category'}
-                message={menuItems.length === 0 
+                description={menuItems.length === 0 
                   ? 'Add menu items in Admin Settings' 
                   : 'Try selecting a different category'}
               />

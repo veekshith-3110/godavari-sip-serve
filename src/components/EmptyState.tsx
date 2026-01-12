@@ -1,9 +1,17 @@
-import { Coffee, ShoppingBag, FileText, Receipt, Package } from 'lucide-react';
+import { Coffee, ShoppingBag, FileText, Receipt, Package, AlertCircle, WifiOff, RefreshCw } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+type EmptyStateType = 'orders' | 'cart' | 'menu' | 'expenses' | 'items' | 'no-data' | 'error' | 'offline';
 
 interface EmptyStateProps {
-  type: 'orders' | 'cart' | 'menu' | 'expenses' | 'items';
+  type: EmptyStateType;
   title?: string;
   description?: string;
+  action?: {
+    label: string;
+    onClick: () => void;
+  };
+  className?: string;
 }
 
 const emptyStateConfig = {
@@ -32,14 +40,29 @@ const emptyStateConfig = {
     title: 'No items available',
     description: 'Check back later or try a different category',
   },
+  'no-data': {
+    icon: Package,
+    title: 'No Data Available',
+    description: 'There\'s nothing to show here yet',
+  },
+  error: {
+    icon: AlertCircle,
+    title: 'Something Went Wrong',
+    description: 'Please try again or contact support if the problem persists',
+  },
+  offline: {
+    icon: WifiOff,
+    title: 'No Internet Connection',
+    description: 'Please check your network connection and try again',
+  },
 };
 
-const EmptyState = ({ type, title, description }: EmptyStateProps) => {
+const EmptyState = ({ type, title, description, action, className }: EmptyStateProps) => {
   const config = emptyStateConfig[type];
   const Icon = config.icon;
 
   return (
-    <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+    <div className={cn("flex flex-col items-center justify-center py-12 px-4 text-center", className)}>
       <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
         <Icon className="w-8 h-8 text-muted-foreground" />
       </div>
@@ -49,6 +72,15 @@ const EmptyState = ({ type, title, description }: EmptyStateProps) => {
       <p className="text-sm text-muted-foreground max-w-xs">
         {description || config.description}
       </p>
+      {action && (
+        <button
+          onClick={action.onClick}
+          className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground font-medium rounded-lg hover:opacity-90 transition-opacity"
+        >
+          <RefreshCw className="w-4 h-4" />
+          {action.label}
+        </button>
+      )}
     </div>
   );
 };
