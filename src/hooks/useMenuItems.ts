@@ -46,20 +46,26 @@ export const useMenuItems = () => {
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const { toast } = useToast();
 
-  // Listen for online/offline events
+  // Listen for online/offline events and app reconnection
   useEffect(() => {
     const handleOnline = () => {
       setIsOffline(false);
       fetchMenuItems(); // Refresh when back online
     };
     const handleOffline = () => setIsOffline(true);
+    const handleReconnected = () => {
+      setIsOffline(false);
+      fetchMenuItems(); // Refresh data when app reconnects
+    };
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+    window.addEventListener('app-reconnected', handleReconnected);
 
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('app-reconnected', handleReconnected);
     };
   }, []);
 

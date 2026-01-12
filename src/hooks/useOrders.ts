@@ -259,15 +259,25 @@ export const useOrders = () => {
     };
   };
 
-  // Sync offline orders when coming online
+  // Sync and refresh when coming online or app reconnects
   useEffect(() => {
     const handleOnline = () => {
       syncQueue();
       fetchOrders();
     };
+    
+    const handleReconnected = () => {
+      syncQueue();
+      fetchOrders();
+    };
 
     window.addEventListener('online', handleOnline);
-    return () => window.removeEventListener('online', handleOnline);
+    window.addEventListener('app-reconnected', handleReconnected);
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('app-reconnected', handleReconnected);
+    };
   }, [syncQueue]);
 
   useEffect(() => {
