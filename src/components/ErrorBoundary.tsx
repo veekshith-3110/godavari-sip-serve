@@ -1,5 +1,5 @@
 import React, { Component, ReactNode } from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 
 interface Props {
   children: ReactNode;
@@ -21,15 +21,21 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('App Error:', error, errorInfo);
+    // Log only in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error('App Error:', error, errorInfo);
+    }
     
-    // Log to localStorage for debugging
+    // Log to localStorage for debugging (without sensitive data)
     try {
       const errorLog = {
         message: error.message,
-        stack: error.stack,
         timestamp: new Date().toISOString(),
-        componentStack: errorInfo.componentStack,
+        // Don't log full stack in production
+        ...(process.env.NODE_ENV === 'development' && {
+          stack: error.stack,
+          componentStack: errorInfo.componentStack,
+        }),
       };
       localStorage.setItem('lastAppError', JSON.stringify(errorLog));
     } catch {
@@ -41,38 +47,54 @@ class ErrorBoundary extends Component<Props, State> {
     window.location.reload();
   };
 
+  handleGoHome = () => {
+    window.location.href = '/';
+  };
+
   render() {
     if (this.state.hasError) {
       return (
         <div className="min-h-screen bg-background flex items-center justify-center p-6">
           <div className="max-w-md w-full text-center">
-            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-destructive/10 flex items-center justify-center">
-              <AlertTriangle className="w-10 h-10 text-destructive" />
+            {/* Icon */}
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+              <AlertTriangle className="w-10 h-10 text-amber-600 dark:text-amber-400" />
             </div>
             
+            {/* Title */}
             <h1 className="text-2xl font-bold text-foreground mb-2">
-              Oops! Something went wrong
+              Something Went Wrong
             </h1>
             
+            {/* Friendly message */}
             <p className="text-muted-foreground mb-6">
-              The app encountered an unexpected error. Your data is safe. Please reload to continue.
+              Don't worry, your data is safe. This is just a temporary issue. 
+              Try reloading the app to continue.
             </p>
 
-            <button
-              onClick={this.handleReload}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:opacity-90 transition-opacity"
-            >
-              <RefreshCw className="w-5 h-5" />
-              Reload App
-            </button>
+            {/* Actions */}
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <button
+                onClick={this.handleReload}
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:opacity-90 transition-opacity"
+              >
+                <RefreshCw className="w-5 h-5" />
+                Reload App
+              </button>
+              
+              <button
+                onClick={this.handleGoHome}
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-secondary text-foreground font-semibold rounded-xl hover:bg-secondary/80 transition-colors"
+              >
+                <Home className="w-5 h-5" />
+                Go Home
+              </button>
+            </div>
 
-            {process.env.NODE_ENV === 'development' && this.state.error && (
-              <div className="mt-6 p-4 bg-destructive/10 rounded-xl text-left">
-                <p className="text-sm font-mono text-destructive break-all">
-                  {this.state.error.message}
-                </p>
-              </div>
-            )}
+            {/* Hint */}
+            <p className="text-xs text-muted-foreground mt-6">
+              If this keeps happening, try clearing your browser cache or contact support.
+            </p>
           </div>
         </div>
       );
