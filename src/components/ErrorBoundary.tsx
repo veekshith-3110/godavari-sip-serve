@@ -32,7 +32,7 @@ class ErrorBoundary extends Component<Props, State> {
         message: error.message,
         timestamp: new Date().toISOString(),
         // Don't log full stack in production
-        ...(process.env.NODE_ENV === 'development' && {
+        ...(import.meta.env.DEV && {
           stack: error.stack,
           componentStack: errorInfo.componentStack,
         }),

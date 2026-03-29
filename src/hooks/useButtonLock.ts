@@ -3,7 +3,7 @@ import { useState, useCallback, useRef } from 'react';
 // Prevent double-clicks on buttons
 export const useButtonLock = (lockDurationMs: number = 2000) => {
   const [isLocked, setIsLocked] = useState(false);
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   const lock = useCallback(() => {
     setIsLocked(true);
