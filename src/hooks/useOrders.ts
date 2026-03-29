@@ -87,8 +87,8 @@ export const useOrders = () => {
         };
       });
 
-      // Use demo data if no real orders exist
-      const finalOrders = ordersWithItems.length > 0 ? ordersWithItems : generateDemoOrders();
+      // Use demo data if fewer than 20 real orders exist (to showcase dashboard)
+      const finalOrders = ordersWithItems.length >= 20 ? ordersWithItems : [...ordersWithItems, ...generateDemoOrders()];
       setOrders(finalOrders);
 
       // Calculate next token based on today's order count
