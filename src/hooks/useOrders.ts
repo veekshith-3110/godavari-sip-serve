@@ -4,6 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useOfflineQueue } from '@/hooks/useOfflineQueue';
 import { fetchWithTimeout } from '@/hooks/useNetwork';
 import { MenuItem } from './useMenuItems';
+import { generateDemoOrders } from '@/data/demoData';
 
 export interface CartItem extends MenuItem {
   quantity: number;
@@ -86,7 +87,9 @@ export const useOrders = () => {
         };
       });
 
-      setOrders(ordersWithItems);
+      // Use demo data if no real orders exist
+      const finalOrders = ordersWithItems.length > 0 ? ordersWithItems : generateDemoOrders();
+      setOrders(finalOrders);
 
       // Calculate next token based on today's order count
       const { startOfDay } = getTodayBoundaries();

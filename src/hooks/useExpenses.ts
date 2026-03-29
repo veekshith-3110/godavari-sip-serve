@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { generateDemoExpenses } from '@/data/demoData';
 
 export interface Expense {
   id: string;
@@ -36,7 +37,8 @@ export const useExpenses = () => {
         createdAt: new Date(exp.created_at),
       }));
 
-      setExpenses(expensesList);
+      // Use demo data if no real expenses exist
+      setExpenses(expensesList.length > 0 ? expensesList : generateDemoExpenses());
     } catch (error: any) {
       // Only log in development, don't scare users
       console.error('Error fetching expenses:', error);
