@@ -37,7 +37,8 @@ export const useExpenses = () => {
         createdAt: new Date(exp.created_at),
       }));
 
-      setExpenses(expensesList);
+      // Use demo data if no real expenses exist
+      setExpenses(expensesList.length > 0 ? expensesList : generateDemoExpenses());
     } catch (error: any) {
       // Only log in development, don't scare users
       console.error('Error fetching expenses:', error);

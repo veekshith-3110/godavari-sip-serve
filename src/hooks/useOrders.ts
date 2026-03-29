@@ -87,7 +87,9 @@ export const useOrders = () => {
         };
       });
 
-      setOrders(ordersWithItems);
+      // Use demo data if no real orders exist
+      const finalOrders = ordersWithItems.length > 0 ? ordersWithItems : generateDemoOrders();
+      setOrders(finalOrders);
 
       // Calculate next token based on today's order count
       const { startOfDay } = getTodayBoundaries();
