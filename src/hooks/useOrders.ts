@@ -4,6 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useOfflineQueue } from '@/hooks/useOfflineQueue';
 import { fetchWithTimeout } from '@/hooks/useNetwork';
 import { MenuItem } from './useMenuItems';
+import { generateDemoOrders } from '@/data/demoData';
 
 export interface CartItem extends MenuItem {
   quantity: number;
